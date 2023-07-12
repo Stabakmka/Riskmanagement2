@@ -1,0 +1,838 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:AccessControl="http://www.sap.com/ndb/SQLCoreModelAccessControl.ecore" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" xmlns:Privilege="http://www.sap.com/ndb/BiModelPrivilege.ecore" id="com.organon.tocs::CV_TOCS_WIP_MONITOR" applyPrivilegeType="NONE" dataCategory="CUBE" schemaVersion="3.0" hierarchyGeneration="SQL" outputViewType="Aggregation" cacheInvalidationPeriod="NONE" enforceSqlExecution="true" propagateInstantiation="true">
+<descriptions defaultDescription="TOCS WIP Monitor Calculation view"/>
+<localVariables>
+  <variable id="IP_EVENT_DATE_FROM" parameter="true">
+    <descriptions defaultDescription="Event Date From"/>
+    <variableProperties datatype="DATE" mandatory="true" defaultExpressionLanguage="SQL">
+      <valueDomain type="Date"/>
+      <selection multiLine="false" type="SingleValue"/>
+      <defaultExpression>ADD_YEARS(CURRENT_UTCDATE, -1)</defaultExpression>
+    </variableProperties>
+  </variable>
+  <variable id="IP_EVENT_DATE_TO" parameter="true">
+    <descriptions defaultDescription="Event Date To"/>
+    <variableProperties datatype="DATE" mandatory="true" defaultExpressionLanguage="SQL">
+      <valueDomain type="Date"/>
+      <selection multiLine="false" type="SingleValue"/>
+      <defaultExpression>CURRENT_UTCDATE</defaultExpression>
+    </variableProperties>
+  </variable>
+  <variable id="XS_APPLICATIONUSER" type="session"/>
+</localVariables>
+<variableMappings/>
+<dataSources>
+  <DataSource id="COM_ORGANON_TOCS_USER_PLANT_ROLE_MAPPING">
+    <resourceUri>COM_ORGANON_TOCS_USER_PLANT_ROLE_MAPPING</resourceUri>
+  </DataSource>
+  <DataSource id="COM_ORGANON_TOCS_EVENTS">
+    <resourceUri>COM_ORGANON_TOCS_EVENTS</resourceUri>
+  </DataSource>
+  <DataSource id="COM_ORGANON_TOCS_HU_CONSUMPTION">
+    <resourceUri>COM_ORGANON_TOCS_HU_CONSUMPTION</resourceUri>
+  </DataSource>
+  <DataSource id="MANUALADJUSTMENTSERVICE_MATERIALMASTERTRANSACTION">
+    <resourceUri>MANUALADJUSTMENTSERVICE_MATERIALMASTERTRANSACTION</resourceUri>
+  </DataSource>
+  <DataSource id="com.organon.tocs::GI_QUANTITY_FOR_HU">
+    <resourceUri>com.organon.tocs::GI_QUANTITY_FOR_HU</resourceUri>
+  </DataSource>
+</dataSources>
+<snapshotProcedures/>
+<calculationViews>
+  <calculationView xsi:type="Calculation:ProjectionView" id="Projection_1" filterExpressionLanguage="SQL">
+    <viewAttributes>
+      <viewAttribute id="PLANT_ID"/>
+      <viewAttribute id="BTP_USER_NAME"/>
+    </viewAttributes>
+    <calculatedViewAttributes/>
+    <input node="COM_ORGANON_TOCS_USER_PLANT_ROLE_MAPPING"/>
+    <filter>UPPER(&quot;BTP_USER_NAME&quot;)='??XS_APPLICATIONUSER??'</filter>
+  </calculationView>
+  <calculationView xsi:type="Calculation:JoinView" id="Join_3" cardinality="CN_1" joinType="inner" filterExpressionLanguage="SQL">
+    <viewAttributes>
+      <viewAttribute id="EVENT_TYPE"/>
+      <viewAttribute id="WAREHOUSE_ID"/>
+      <viewAttribute id="PLANT_ID"/>
+      <viewAttribute id="MATERIAL_ID"/>
+      <viewAttribute id="BATCH_ID"/>
+      <viewAttribute id="DEST_STORAGE_TYPE"/>
+      <viewAttribute id="DEST_HU_ID"/>
+      <viewAttribute id="DEST_STORAGE_BIN"/>
+      <viewAttribute id="PROCESS_ORDER_ID"/>
+      <viewAttribute id="WAREHOUSE_TASK"/>
+      <viewAttribute id="ACCUMULATED_TOCS_TIME" aggregationType="sum"/>
+      <viewAttribute id="UOM"/>
+      <viewAttribute id="EVENT_DATE"/>
+      <viewAttribute id="EVENT_TIME"/>
+    
+      <viewAttribute id="EVENT_DATE_UTC" aggregationType="min"/>
+    
+      <viewAttribute id="MANDT"/>
+    </viewAttributes>
+    <calculatedViewAttributes/>
+    <input node="COM_ORGANON_TOCS_EVENTS">
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TYPE" source="EVENT_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WAREHOUSE_ID" source="WAREHOUSE_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PLANT_ID" source="PLANT_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MATERIAL_ID" source="MATERIAL_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="BATCH_ID" source="BATCH_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_TYPE" source="DEST_STORAGE_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_HU_ID" source="DEST_HU_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_BIN" source="DEST_STORAGE_BIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PROCESS_ORDER_ID" source="PROCESS_ORDER_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WAREHOUSE_TASK" source="WAREHOUSE_TASK"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="ACCUMULATED_TOCS_TIME" source="ACCUMULATED_TOCS_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="UOM" source="UOM"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_DATE" source="EVENT_DATE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TIME" source="EVENT_TIME"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_DATE_UTC" source="EVENT_DATE_UTC"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="MANDT" source="MANDT"/>
+    </input>
+    <input node="Projection_1">
+      <mapping xsi:type="Calculation:AttributeMapping" target="PLANT_ID" source="PLANT_ID"/>
+    </input>
+    <filter>&quot;EVENT_DATE&quot; &gt;= '$$IP_EVENT_DATE_FROM$$' and
+&quot;EVENT_DATE&quot; &lt;= '$$IP_EVENT_DATE_TO$$'</filter>
+    <joinAttribute name="PLANT_ID"/>
+  </calculationView>
+  <calculationView xsi:type="Calculation:AggregationView" id="Aggr_Events" filterExpressionLanguage="SQL">
+    <viewAttributes>
+      <viewAttribute id="EVENT_TYPE"/>
+      <viewAttribute id="WAREHOUSE_ID"/>
+      <viewAttribute id="PLANT_ID"/>
+      <viewAttribute id="MATERIAL_ID"/>
+      <viewAttribute id="BATCH_ID"/>
+      <viewAttribute id="DEST_STORAGE_TYPE"/>
+      <viewAttribute id="DEST_HU_ID"/>
+      <viewAttribute id="DEST_STORAGE_BIN"/>
+      <viewAttribute id="PROCESS_ORDER_ID"/>
+      <viewAttribute id="WAREHOUSE_TASK"/>
+      <viewAttribute id="ACCUMULATED_TOCS_TIME" aggregationType="sum"/>
+      <viewAttribute id="UOM"/>
+    
+      <viewAttribute id="EVENT_DATE"/>
+      <viewAttribute id="EVENT_TIME"/>
+      <viewAttribute id="EVENT_DATE_UTC" aggregationType="min"/>
+    
+      <viewAttribute id="MANDT"/>
+    </viewAttributes>
+    <calculatedViewAttributes>
+      <calculatedViewAttribute id="CA_GI_QUANTITY_UOM" datatype="NVARCHAR" length="13" expressionLanguage="SQL">
+        <formula>CASE
+	 WHEN &quot;EVENT_TYPE&quot;='M' then &quot;UOM&quot; 
+	 ELSE ' '
+ END</formula>
+      </calculatedViewAttribute>
+    
+      <calculatedViewAttribute id="CA_GI_TASK_ORDER" datatype="NVARCHAR" length="5000" expressionLanguage="SQL">
+    
+        <formula>CASE 
+	 WHEN &quot;EVENT_TYPE&quot;='M' then &quot;WAREHOUSE_TASK&quot;
+	 ELSE ' '
+ END</formula>
+    
+      </calculatedViewAttribute>
+    
+      <calculatedViewAttribute id="CA_SYSTEM_DATETIME_UTC" datatype="TIMESTAMP" expressionLanguage="SQL">
+    
+        <formula>CURRENT_UTCTIMESTAMP</formula>
+    
+      </calculatedViewAttribute>
+    
+      <calculatedViewAttribute id="CA_GI_CONF_DATE" datatype="NVARCHAR" length="13" expressionLanguage="SQL">
+    
+        <formula>CASE
+	 WHEN &quot;EVENT_TYPE&quot;='M' then &quot;EVENT_DATE&quot;
+	 ELSE ' '
+ END</formula>
+    
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="CA_GI_CONF_TIME" datatype="NVARCHAR" length="13" expressionLanguage="SQL">
+        <formula>CASE
+	 WHEN &quot;EVENT_TYPE&quot;='M' then &quot;EVENT_TIME&quot;
+	 ELSE ' '
+ END</formula>
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="CA_GI_CONF_DATE_TIME" datatype="TIMESTAMP" expressionLanguage="SQL">
+        <formula>CASE 
+	 WHEN &quot;EVENT_TYPE&quot;='M' then &quot;CC_EVENT_DATE_TIME_TIMESTAMP&quot;
+	 ELSE ''
+END</formula>
+      </calculatedViewAttribute>
+    
+      <calculatedViewAttribute id="CA_WIP_TIME_MIN" datatype="INTEGER" expressionLanguage="SQL">
+    
+        <formula>SECONDS_BETWEEN(&quot;CA_GI_CONF_DATE_TIME&quot;,&quot;CA_SYSTEM_DATETIME_UTC&quot;)/60
+</formula>
+    
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="CA_GI_WIP_TIME_MIN" datatype="INTEGER" expressionLanguage="SQL">
+        <formula>case 
+when &quot;EVENT_TYPE&quot; ='M' then &quot;CA_WIP_TIME_MIN&quot;
+else '0'
+END</formula>
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="CA_GI_TOCS_ACC_TIME_MINS" datatype="INTEGER" expressionLanguage="SQL">
+        <formula>&quot;RM_GI_ACC_TOCS_TIME&quot;/(1000*60)</formula>
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="CA_TOCS_ACC_GI_WIP_MINS" datatype="INTEGER" expressionLanguage="SQL">
+        <formula>&quot;CA_GI_TOCS_ACC_TIME_MINS&quot;+&quot;CA_GI_WIP_TIME_MIN&quot;</formula>
+      </calculatedViewAttribute>
+    
+      <calculatedViewAttribute id="CC_EVENT_DATE_TIME_TIMESTAMP" datatype="TIMESTAMP" expressionLanguage="SQL">
+    
+        <formula>&quot;EVENT_DATE_UTC&quot;</formula>
+    
+      </calculatedViewAttribute></calculatedViewAttributes>
+    <restrictedViewAttributes>
+      <restrictedViewAttribute id="RM_GI_ACC_TOCS_TIME" baseViewAttribute="ACCUMULATED_TOCS_TIME" restrictionExpressionLanguage="SQL">
+        <restriction logicalOperator="AND">
+          <filter xsi:type="Privilege:AttributeFilter" attributeName="EVENT_TYPE">
+            <valueFilter xsi:type="AccessControl:SingleValueFilter" including="true" value="M"/>
+          </filter>
+          <attributeName>EVENT_TYPE</attributeName>
+        </restriction>
+      </restrictedViewAttribute>
+    </restrictedViewAttributes>
+    <input node="Join_3"/>
+    <filter>&quot;EVENT_DATE&quot; &gt;= '$$IP_EVENT_DATE_FROM$$' and
+&quot;EVENT_DATE&quot; &lt;= '$$IP_EVENT_DATE_TO$$'</filter>
+  </calculationView>
+  <calculationView xsi:type="Calculation:JoinView" id="Join_1" cardinality="CN_1" joinType="leftOuter" filterExpressionLanguage="SQL">
+    <viewAttributes>
+      <viewAttribute id="ACCUMULATED_TOCS_TIME" aggregationType="sum"/>
+      <viewAttribute id="WAREHOUSE_ID"/>
+      <viewAttribute id="PLANT_ID"/>
+      <viewAttribute id="MATERIAL_ID"/>
+      <viewAttribute id="BATCH_ID"/>
+      <viewAttribute id="DEST_STORAGE_TYPE"/>
+      <viewAttribute id="DEST_HU_ID"/>
+      <viewAttribute id="DEST_STORAGE_BIN"/>
+      <viewAttribute id="PROCESS_ORDER_ID"/>
+      <viewAttribute id="WAREHOUSE_TASK"/>
+      <viewAttribute id="EVENT_TYPE"/>
+      <viewAttribute id="CA_GI_QUANTITY_UOM"/>
+      <viewAttribute id="CA_GI_TASK_ORDER"/>
+      <viewAttribute id="CC_EVENT_DATE_TIME_TIMESTAMP" aggregationType="min"/>
+    
+      <viewAttribute id="CA_TOCS_ACC_GI_WIP_MINS" aggregationType="sum"/>
+      <viewAttribute id="CA_GI_CONF_TIME"/>
+      <viewAttribute id="CA_GI_CONF_DATE"/>
+      <viewAttribute id="BRIDGING_STATUS"/>
+      <viewAttribute id="EVENT_DATE"/>
+      <viewAttribute id="MANDT"/>
+    </viewAttributes>
+    <calculatedViewAttributes>
+      <calculatedViewAttribute id="CC_BRIDGING_STATUS" datatype="NVARCHAR" length="13" expressionLanguage="SQL">
+        <formula>CASE  
+	 WHEN &quot;BRIDGING_STATUS&quot; then 'BRIDGED'
+	 ELSE 'UNBRIDGED'
+ END</formula>
+      </calculatedViewAttribute>
+    </calculatedViewAttributes>
+    <input node="Aggr_Events">
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TYPE" source="EVENT_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WAREHOUSE_ID" source="WAREHOUSE_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PLANT_ID" source="PLANT_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MATERIAL_ID" source="MATERIAL_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="BATCH_ID" source="BATCH_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_TYPE" source="DEST_STORAGE_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_HU_ID" source="DEST_HU_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_BIN" source="DEST_STORAGE_BIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PROCESS_ORDER_ID" source="PROCESS_ORDER_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WAREHOUSE_TASK" source="WAREHOUSE_TASK"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="ACCUMULATED_TOCS_TIME" source="ACCUMULATED_TOCS_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CA_GI_QUANTITY_UOM" source="CA_GI_QUANTITY_UOM"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CA_GI_TASK_ORDER" source="CA_GI_TASK_ORDER"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CA_GI_CONF_DATE" source="CA_GI_CONF_DATE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CA_GI_CONF_TIME" source="CA_GI_CONF_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CA_TOCS_ACC_GI_WIP_MINS" source="CA_TOCS_ACC_GI_WIP_MINS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CC_EVENT_DATE_TIME_TIMESTAMP" source="CC_EVENT_DATE_TIME_TIMESTAMP"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_DATE" source="EVENT_DATE"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="MANDT" source="MANDT"/>
+    </input>
+    <input node="COM_ORGANON_TOCS_HU_CONSUMPTION">
+      <mapping xsi:type="Calculation:AttributeMapping" target="BRIDGING_STATUS" source="BRIDGING_STATUS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PLANT_ID" source="PLANT_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MATERIAL_ID" source="MATERIAL_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="BATCH_ID" source="BATCH_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_HU_ID" source="HU_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PROCESS_ORDER_ID" source="PROCESS_ORDER_ID"/>
+    </input>
+    <filter>&quot;EVENT_DATE&quot; &gt;= '$$IP_EVENT_DATE_FROM$$' and
+&quot;EVENT_DATE&quot; &lt;= '$$IP_EVENT_DATE_TO$$'</filter>
+    <joinAttribute name="PLANT_ID"/>
+    <joinAttribute name="MATERIAL_ID"/>
+    <joinAttribute name="BATCH_ID"/>
+    <joinAttribute name="DEST_HU_ID"/>
+    <joinAttribute name="PROCESS_ORDER_ID"/>
+  </calculationView>
+  <calculationView xsi:type="Calculation:JoinView" id="Join_Event_Material" cardinality="CN_1" joinType="inner" filterExpressionLanguage="SQL">
+    <viewAttributes>
+      <viewAttribute id="ACCUMULATED_TOCS_TIME" aggregationType="sum"/>
+      <viewAttribute id="WAREHOUSE_ID"/>
+      <viewAttribute id="PLANT_ID"/>
+      <viewAttribute id="MATERIAL_ID"/>
+      <viewAttribute id="BATCH_ID"/>
+      <viewAttribute id="DEST_STORAGE_TYPE"/>
+      <viewAttribute id="DEST_HU_ID"/>
+      <viewAttribute id="DEST_STORAGE_BIN"/>
+      <viewAttribute id="PROCESS_ORDER_ID"/>
+      <viewAttribute id="WAREHOUSE_TASK"/>
+      <viewAttribute id="EVENT_TYPE"/>
+      <viewAttribute id="CA_QUANTITY_UOM"/>
+    
+      <viewAttribute id="CA_GI_TASK_ORDER"/>
+    
+      <viewAttribute id="CC_EVENT_DATE_TIME_TIMESTAMP" aggregationType="min"/>
+    
+      <viewAttribute id="CA_GI_CONF_TIME"/>
+      <viewAttribute id="CA_GI_CONF_DATE"/>
+    
+      <viewAttribute id="EVENT_DATE"/>
+    
+      <viewAttribute id="SENSITIVITY_TYPE"/>
+      <viewAttribute id="CA_TOCS_ACC_GI_WIP_MINS" aggregationType="sum"/>
+    
+      <viewAttribute id="MAX_TOCS_TIME_DAYS"/>
+      <viewAttribute id="MAX_TOCS_TIME_HRS"/>
+      <viewAttribute id="MAX_TOCS_TIME_MIN"/>
+      <viewAttribute id="WARNING_TIME_DAYS" aggregationType="sum"/>
+      <viewAttribute id="WARNING_TIME_HRS" aggregationType="sum"/>
+      <viewAttribute id="WARNING_TIME_MIN" aggregationType="sum"/>
+      <viewAttribute id="MAXTIMEINMILLI" aggregationType="sum"/>
+      <viewAttribute id="WARNTIMEINMILLI" aggregationType="sum"/>
+    
+      <viewAttribute id="CC_BRIDGING_STATUS"/>
+      <viewAttribute id="BRIDGING_STATUS"/>
+      <viewAttribute hidden="true" id="JOIN$MANDT$MANDT"/>
+    </viewAttributes>
+    <calculatedViewAttributes>
+      <calculatedViewAttribute id="CM_ACC_TOCS_MIN" datatype="INTEGER" expressionLanguage="SQL">
+        <formula>&quot;ACCUMULATED_TOCS_TIME&quot;/(1000*60)</formula>
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="CM_TIME_LEFT_MIN" datatype="INTEGER" expressionLanguage="SQL">
+        <formula>CEIL(&quot;CM_MAX_TOCS_MIN&quot;-&quot;CA_TOCS_ACC_GI_WIP_MINS&quot;)</formula>
+      </calculatedViewAttribute>
+    
+      <calculatedViewAttribute id="CC_ACC_TOCS_DAYS_HRS_MIN" datatype="NVARCHAR" length="13" expressionLanguage="SQL">
+    
+        <formula>CASE 
+	 WHEN &quot;EVENT_TYPE&quot;='M' then CONCAT(
+CONCAT(
+CONCAT(
+CONCAT(TO_INT(&quot;CM_ACC_TOCS_MIN&quot;/(60 * 24)), ':'),
+ LPAD(TO_INT(MOD(&quot;CM_ACC_TOCS_MIN&quot; / 60, 24)),2,'0')),':'),
+ LPAD(TO_INT(MOD(&quot;CM_ACC_TOCS_MIN&quot;, 60)),2,'0')) 
+	 ELSE ' '
+ END</formula>
+    
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="CC_MAX_TOCS_DAYS_HRS_MIN" datatype="NVARCHAR" length="13" expressionLanguage="SQL">
+        <formula>CONCAT(
+CONCAT(
+CONCAT(
+CONCAT(TO_INT(&quot;CM_MAX_TOCS_MIN&quot;/(60 * 24)), ':'),
+ LPAD(TO_INT(MOD(&quot;CM_MAX_TOCS_MIN&quot; / 60, 24)),2,'0')),':'),
+ LPAD(TO_INT(MOD(&quot;CM_MAX_TOCS_MIN&quot;, 60)),2,'0')) </formula>
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="CC_TIME_LEFT_DAYS_HRS_MIN" datatype="NVARCHAR" length="13" expressionLanguage="SQL">
+        <formula>CASE 
+    WHEN &quot;EVENT_TYPE&quot; != 'M' then ' '
+	 ELSE
+	 CASE WHEN &quot;CM_TIME_LEFT_MIN&quot; &lt; 0 then 
+CONCAT('-',
+CONCAT(
+CONCAT(
+CONCAT(
+CONCAT(TO_INT(ABS(&quot;CM_TIME_LEFT_MIN&quot;)/(60 * 24)), ':'),
+ LPAD(TO_INT(MOD(ABS(&quot;CM_TIME_LEFT_MIN&quot;) / 60, 24)),2,'0')),':'),
+ LPAD(TO_INT(MOD(ABS(&quot;CM_TIME_LEFT_MIN&quot;), 60)),2,'0'))) 
+	 ELSE 
+CONCAT(
+CONCAT(
+CONCAT(
+CONCAT(TO_INT(&quot;CM_TIME_LEFT_MIN&quot;/(60 * 24)), ':'),
+ LPAD(TO_INT(MOD(&quot;CM_TIME_LEFT_MIN&quot; / 60, 24)),2,'0')),':'),
+ LPAD(TO_INT(MOD(&quot;CM_TIME_LEFT_MIN&quot;, 60)),2,'0'))  
+ END
+ END</formula>
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="CC_ACC_WIP_DAYS_HRS_MIN" datatype="NVARCHAR" length="13" expressionLanguage="SQL">
+        <formula>CASE 
+	 WHEN &quot;EVENT_TYPE&quot;='M' then CONCAT(
+CONCAT(
+CONCAT(
+CONCAT(TO_INT(&quot;CA_TOCS_ACC_GI_WIP_MINS&quot;/(60 * 24)), ':'),
+ LPAD(TO_INT(MOD(&quot;CA_TOCS_ACC_GI_WIP_MINS&quot; / 60, 24)),2,'0')),':'),
+ LPAD(TO_INT(MOD(&quot;CA_TOCS_ACC_GI_WIP_MINS&quot;, 60)),2,'0')) 
+	 ELSE ' '
+ END</formula>
+      </calculatedViewAttribute>
+    
+      <calculatedViewAttribute id="CM_HU_IN_WARNING" datatype="TINYINT" expressionLanguage="SQL">
+    
+        <formula> &quot;CM_TIME_LEFT_MIN&quot; &lt;= &quot;CM_WARNING_TIME_LEFT_MINS&quot; AND  &quot;CM_TIME_LEFT_MIN&quot; &gt; 0</formula>
+    
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="CM_HU_PAST_TOCS" datatype="TINYINT" expressionLanguage="SQL">
+        <formula>&quot;CM_TIME_LEFT_MIN&quot; &lt;= 0</formula>
+      </calculatedViewAttribute>
+    
+      <calculatedViewAttribute id="CM_WARNING_TIME_LEFT_MINS" datatype="INTEGER" expressionLanguage="SQL">
+    
+        <formula>&quot;CM_MAX_TOCS_MIN&quot; - &quot;CM_WARNING_TIME_MIN&quot;</formula>
+    
+      </calculatedViewAttribute>
+    
+      <calculatedViewAttribute id="CM_MAX_TOCS_MIN" datatype="BIGINT" expressionLanguage="SQL">
+    
+        <formula>TO_DECIMAL(&quot;MAXTIMEINMILLI&quot;)/(1000 * 60)</formula>
+    
+      </calculatedViewAttribute>
+    
+      <calculatedViewAttribute id="CC_EVENT_PRIORITY" datatype="INTEGER" expressionLanguage="SQL">
+    
+        <formula>CASE 
+	 WHEN &quot;EVENT_TYPE&quot;='M' then 1 
+	 ELSE 0
+ END</formula>
+    
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="CM_WARNING_TIME_MIN" datatype="BIGINT" expressionLanguage="SQL">
+        <formula>TO_DECIMAL(&quot;WARNTIMEINMILLI&quot;)/(1000 * 60)</formula>
+      </calculatedViewAttribute>
+    </calculatedViewAttributes>
+    <input node="Join_1">
+      <mapping xsi:type="Calculation:AttributeMapping" target="ACCUMULATED_TOCS_TIME" source="ACCUMULATED_TOCS_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WAREHOUSE_ID" source="WAREHOUSE_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PLANT_ID" source="PLANT_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MATERIAL_ID" source="MATERIAL_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="BATCH_ID" source="BATCH_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_TYPE" source="DEST_STORAGE_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_HU_ID" source="DEST_HU_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_BIN" source="DEST_STORAGE_BIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PROCESS_ORDER_ID" source="PROCESS_ORDER_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WAREHOUSE_TASK" source="WAREHOUSE_TASK"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TYPE" source="EVENT_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CA_QUANTITY_UOM" source="CA_GI_QUANTITY_UOM"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="CA_GI_TASK_ORDER" source="CA_GI_TASK_ORDER"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="CC_EVENT_DATE_TIME_TIMESTAMP" source="CC_EVENT_DATE_TIME_TIMESTAMP"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CA_TOCS_ACC_GI_WIP_MINS" source="CA_TOCS_ACC_GI_WIP_MINS"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="CA_GI_CONF_TIME" source="CA_GI_CONF_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CA_GI_CONF_DATE" source="CA_GI_CONF_DATE"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_DATE" source="EVENT_DATE"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="CC_BRIDGING_STATUS" source="CC_BRIDGING_STATUS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="BRIDGING_STATUS" source="BRIDGING_STATUS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$MANDT$MANDT" source="MANDT"/>
+    </input>
+    <input node="MANUALADJUSTMENTSERVICE_MATERIALMASTERTRANSACTION">
+      <mapping xsi:type="Calculation:AttributeMapping" target="SENSITIVITY_TYPE" source="SENSITIVITYTYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MAX_TOCS_TIME_DAYS" source="MAXTIMEDAYS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MAX_TOCS_TIME_HRS" source="MAXTIMEHRS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MAX_TOCS_TIME_MIN" source="MAXTIMEMIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WARNING_TIME_DAYS" source="WARNTIMEDAYS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WARNING_TIME_HRS" source="WARNTIMEHRS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WARNING_TIME_MIN" source="WARNTIMEMIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MAXTIMEINMILLI" source="MAXTIMEINMILLI"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WARNTIMEINMILLI" source="WARNTIMEINMILLI"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MATERIAL_ID" source="MATERIAL"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PLANT_ID" source="PLANT"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$MANDT$MANDT" source="MANDT"/>
+    </input>
+    <filter>&quot;EVENT_DATE&quot; &gt;= '$$IP_EVENT_DATE_FROM$$' and
+&quot;EVENT_DATE&quot; &lt;= '$$IP_EVENT_DATE_TO$$'</filter>
+    <joinAttribute name="MATERIAL_ID"/>
+    <joinAttribute name="PLANT_ID"/>
+    <joinAttribute name="JOIN$MANDT$MANDT"/>
+  </calculationView>
+  <calculationView xsi:type="Calculation:RankView" id="Rank_1" filterExpressionLanguage="SQL" allowFilterPushdown="true">
+    <viewAttributes>
+      <viewAttribute id="ACCUMULATED_TOCS_TIME" aggregationType="sum"/>
+      <viewAttribute id="WAREHOUSE_ID"/>
+      <viewAttribute id="PLANT_ID"/>
+      <viewAttribute id="MATERIAL_ID"/>
+      <viewAttribute id="BATCH_ID"/>
+      <viewAttribute id="DEST_STORAGE_TYPE"/>
+      <viewAttribute id="DEST_HU_ID"/>
+      <viewAttribute id="DEST_STORAGE_BIN"/>
+      <viewAttribute id="PROCESS_ORDER_ID"/>
+      <viewAttribute id="WAREHOUSE_TASK"/>
+      <viewAttribute id="EVENT_TYPE"/>
+      <viewAttribute id="CA_QUANTITY_UOM"/>
+      <viewAttribute id="CA_GI_TASK_ORDER"/>
+      <viewAttribute id="CC_EVENT_DATE_TIME_TIMESTAMP" aggregationType="min"/>
+      <viewAttribute id="CA_GI_CONF_TIME"/>
+      <viewAttribute id="CA_GI_CONF_DATE"/>
+      <viewAttribute id="CM_TIME_LEFT_MIN" aggregationType="sum"/>
+      <viewAttribute id="CC_ACC_TOCS_DAYS_HRS_MIN"/>
+      <viewAttribute id="CC_MAX_TOCS_DAYS_HRS_MIN"/>
+      <viewAttribute id="CC_TIME_LEFT_DAYS_HRS_MIN"/>
+      <viewAttribute id="CC_ACC_WIP_DAYS_HRS_MIN"/>
+      <viewAttribute id="CM_HU_IN_WARNING" aggregationType="sum"/>
+      <viewAttribute id="CM_HU_PAST_TOCS" aggregationType="sum"/>
+      <viewAttribute id="CM_WARNING_TIME_LEFT_MINS" aggregationType="sum"/>
+      <viewAttribute id="CM_MAX_TOCS_MIN" aggregationType="sum"/>
+      <viewAttribute id="CC_EVENT_PRIORITY" aggregationType="sum"/>
+    
+      <viewAttribute id="EVENT_DATE"/>
+    
+      <viewAttribute id="CC_BRIDGING_STATUS"/>
+      <viewAttribute id="BRIDGING_STATUS"/>
+    </viewAttributes>
+    <calculatedViewAttributes/>
+    <input node="Join_Event_Material"/>
+    <rankingFilter type="RANK" offset="0" offsetReference="FRONT" dynamicPartitionAttributes="false">
+      <partitionViewAttributeName id="DEST_HU_ID"/>
+      <order byViewAttributeName="CC_EVENT_PRIORITY" direction="DESC"/>
+      <order byViewAttributeName="CC_EVENT_DATE_TIME_TIMESTAMP" direction="DESC"/>
+      <rankThreshold>
+        <value>1</value>
+      </rankThreshold>
+      <rankViewAttributeName>Rank</rankViewAttributeName>
+    </rankingFilter>
+    <filter>&quot;EVENT_DATE&quot; &gt;= '$$IP_EVENT_DATE_FROM$$' and
+&quot;EVENT_DATE&quot; &lt;= '$$IP_EVENT_DATE_TO$$'</filter>
+  </calculationView>
+  <calculationView xsi:type="Calculation:JoinView" id="Join_2" cardinality="C1_1" joinType="leftOuter" filterExpressionLanguage="SQL">
+    <viewAttributes>
+      <viewAttribute id="ACCUMULATED_TOCS_TIME" aggregationType="sum"/>
+      <viewAttribute id="WAREHOUSE_ID"/>
+      <viewAttribute id="PLANT_ID"/>
+      <viewAttribute id="MATERIAL_ID"/>
+      <viewAttribute id="BATCH_ID"/>
+      <viewAttribute id="DEST_STORAGE_TYPE"/>
+      <viewAttribute id="DEST_HU_ID"/>
+      <viewAttribute id="DEST_STORAGE_BIN"/>
+      <viewAttribute id="PROCESS_ORDER_ID"/>
+      <viewAttribute id="WAREHOUSE_TASK"/>
+      <viewAttribute id="EVENT_TYPE"/>
+      <viewAttribute id="CA_QUANTITY_UOM"/>
+      <viewAttribute id="CA_GI_TASK_ORDER"/>
+      <viewAttribute id="CC_EVENT_DATE_TIME_TIMESTAMP" aggregationType="min"/>
+      <viewAttribute id="CA_GI_CONF_TIME"/>
+      <viewAttribute id="CA_GI_CONF_DATE"/>
+      <viewAttribute id="CM_TIME_LEFT_MIN" aggregationType="sum"/>
+      <viewAttribute id="CC_ACC_TOCS_DAYS_HRS_MIN"/>
+      <viewAttribute id="CC_MAX_TOCS_DAYS_HRS_MIN"/>
+      <viewAttribute id="CC_TIME_LEFT_DAYS_HRS_MIN"/>
+      <viewAttribute id="CC_ACC_WIP_DAYS_HRS_MIN"/>
+      <viewAttribute id="CM_HU_IN_WARNING" aggregationType="sum"/>
+      <viewAttribute id="CM_HU_PAST_TOCS" aggregationType="sum"/>
+      <viewAttribute id="CM_WARNING_TIME_LEFT_MINS" aggregationType="sum"/>
+      <viewAttribute id="CM_MAX_TOCS_MIN" aggregationType="sum"/>
+      <viewAttribute id="CC_EVENT_PRIORITY" aggregationType="sum"/>
+      <viewAttribute id="Rank" aggregationType="sum"/>
+      <viewAttribute id="TOTAL_GI_QUANTITY" aggregationType="sum"/>
+    
+      <viewAttribute id="EVENT_DATE"/>
+    
+      <viewAttribute id="CC_BRIDGING_STATUS"/>
+      <viewAttribute id="BRIDGING_STATUS"/>
+    </viewAttributes>
+    <calculatedViewAttributes/>
+    <input node="Rank_1">
+      <mapping xsi:type="Calculation:AttributeMapping" target="ACCUMULATED_TOCS_TIME" source="ACCUMULATED_TOCS_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WAREHOUSE_ID" source="WAREHOUSE_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PLANT_ID" source="PLANT_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MATERIAL_ID" source="MATERIAL_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="BATCH_ID" source="BATCH_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_TYPE" source="DEST_STORAGE_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_HU_ID" source="DEST_HU_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_BIN" source="DEST_STORAGE_BIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PROCESS_ORDER_ID" source="PROCESS_ORDER_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WAREHOUSE_TASK" source="WAREHOUSE_TASK"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TYPE" source="EVENT_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CA_QUANTITY_UOM" source="CA_QUANTITY_UOM"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CA_GI_TASK_ORDER" source="CA_GI_TASK_ORDER"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CC_EVENT_DATE_TIME_TIMESTAMP" source="CC_EVENT_DATE_TIME_TIMESTAMP"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CA_GI_CONF_TIME" source="CA_GI_CONF_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CA_GI_CONF_DATE" source="CA_GI_CONF_DATE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CM_TIME_LEFT_MIN" source="CM_TIME_LEFT_MIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CC_ACC_TOCS_DAYS_HRS_MIN" source="CC_ACC_TOCS_DAYS_HRS_MIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CC_MAX_TOCS_DAYS_HRS_MIN" source="CC_MAX_TOCS_DAYS_HRS_MIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CC_TIME_LEFT_DAYS_HRS_MIN" source="CC_TIME_LEFT_DAYS_HRS_MIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CC_ACC_WIP_DAYS_HRS_MIN" source="CC_ACC_WIP_DAYS_HRS_MIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CM_HU_IN_WARNING" source="CM_HU_IN_WARNING"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CM_HU_PAST_TOCS" source="CM_HU_PAST_TOCS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CM_WARNING_TIME_LEFT_MINS" source="CM_WARNING_TIME_LEFT_MINS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CM_MAX_TOCS_MIN" source="CM_MAX_TOCS_MIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CC_EVENT_PRIORITY" source="CC_EVENT_PRIORITY"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="Rank" source="Rank"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_DATE" source="EVENT_DATE"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="CC_BRIDGING_STATUS" source="CC_BRIDGING_STATUS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="BRIDGING_STATUS" source="BRIDGING_STATUS"/>
+    </input>
+    <input node="com.organon.tocs::GI_QUANTITY_FOR_HU">
+      <mapping xsi:type="Calculation:AttributeMapping" target="TOTAL_GI_QUANTITY" source="GI_QUANTITY"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_HU_ID" source="DEST_HU_ID"/>
+    </input>
+    <filter>&quot;EVENT_DATE&quot; &gt;= '$$IP_EVENT_DATE_FROM$$' and
+&quot;EVENT_DATE&quot; &lt;= '$$IP_EVENT_DATE_TO$$'</filter>
+    <joinAttribute name="DEST_HU_ID"/>
+  </calculationView>
+</calculationViews>
+
+<logicalModel id="Join_2" filterExpressionLanguage="SQL">
+  <attributes>
+    <attribute id="PROCESS_ORDER_ID" order="1" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="PROCESS_ORDER_ID"/>
+      <keyMapping columnObjectName="Join_2" columnName="PROCESS_ORDER_ID"/>
+    </attribute>
+    <attribute id="PLANT_ID" order="2" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="PLANT_ID"/>
+      <keyMapping columnObjectName="Join_2" columnName="PLANT_ID"/>
+    </attribute>
+    <attribute id="MATERIAL_ID" order="3" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="MATERIAL_ID"/>
+      <keyMapping columnObjectName="Join_2" columnName="MATERIAL_ID"/>
+    </attribute>
+    <attribute id="WAREHOUSE_ID" order="4" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="WAREHOUSE_ID"/>
+      <keyMapping columnObjectName="Join_2" columnName="WAREHOUSE_ID"/>
+    </attribute>
+    <attribute id="BATCH_ID" order="5" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="BATCH_ID"/>
+      <keyMapping columnObjectName="Join_2" columnName="BATCH_ID"/>
+    </attribute>
+    <attribute id="DEST_STORAGE_TYPE" order="6" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="DEST_STORAGE_TYPE"/>
+      <keyMapping columnObjectName="Join_2" columnName="DEST_STORAGE_TYPE"/>
+    </attribute>
+    <attribute id="DEST_HU_ID" order="7" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="DEST_HU_ID"/>
+      <keyMapping columnObjectName="Join_2" columnName="DEST_HU_ID"/>
+    </attribute>
+    <attribute id="DEST_STORAGE_BIN" order="8" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="DEST_STORAGE_BIN"/>
+      <keyMapping columnObjectName="Join_2" columnName="DEST_STORAGE_BIN"/>
+    </attribute>
+    <attribute id="WAREHOUSE_TASK" order="9" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="WAREHOUSE_TASK"/>
+      <keyMapping columnObjectName="Join_2" columnName="WAREHOUSE_TASK"/>
+    </attribute>
+    <attribute id="EVENT_TYPE" order="10" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="EVENT_TYPE"/>
+      <keyMapping columnObjectName="Join_2" columnName="EVENT_TYPE"/>
+    </attribute>
+    <attribute id="CA_GI_TASK_ORDER" order="11" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="CA_GI_TASK_ORDER"/>
+      <keyMapping columnObjectName="Join_2" columnName="CA_GI_TASK_ORDER"/>
+    </attribute>
+    <attribute id="CA_QUANTITY_UOM" order="12" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="CA_QUANTITY_UOM"/>
+      <keyMapping columnObjectName="Join_2" columnName="CA_QUANTITY_UOM"/>
+    </attribute>
+  
+    <attribute id="CC_ACC_TOCS_DAYS_HRS_MIN" order="16" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="CC_ACC_TOCS_DAYS_HRS_MIN"/>
+  
+      <keyMapping columnObjectName="Join_2" columnName="CC_ACC_TOCS_DAYS_HRS_MIN"/>
+  
+    </attribute>
+    <attribute id="CC_MAX_TOCS_DAYS_HRS_MIN" order="17" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="CC_MAX_TOCS_DAYS_HRS_MIN"/>
+      <keyMapping columnObjectName="Join_2" columnName="CC_MAX_TOCS_DAYS_HRS_MIN"/>
+    </attribute>
+    <attribute id="CC_TIME_LEFT_DAYS_HRS_MIN" order="18" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="CC_TIME_LEFT_DAYS_HRS_MIN"/>
+      <keyMapping columnObjectName="Join_2" columnName="CC_TIME_LEFT_DAYS_HRS_MIN"/>
+    </attribute>
+    <attribute id="CC_ACC_WIP_DAYS_HRS_MIN" order="19" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="CC_ACC_WIP_DAYS_HRS_MIN"/>
+      <keyMapping columnObjectName="Join_2" columnName="CC_ACC_WIP_DAYS_HRS_MIN"/>
+    </attribute>
+  
+    <attribute id="CA_GI_CONF_TIME" order="23" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="CA_GI_CONF_TIME"/>
+  
+      <keyMapping columnObjectName="Join_2" columnName="CA_GI_CONF_TIME"/>
+  
+    </attribute>
+    <attribute id="CA_GI_CONF_DATE" order="24" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="CA_GI_CONF_DATE"/>
+      <keyMapping columnObjectName="Join_2" columnName="CA_GI_CONF_DATE"/>
+    </attribute>
+  
+    <attribute id="EVENT_DATE" order="29" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="EVENT_DATE"/>
+  
+      <keyMapping columnObjectName="Join_2" columnName="EVENT_DATE"/>
+  
+    </attribute>
+    <attribute id="CC_BRIDGING_STATUS" order="30" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="CC_BRIDGING_STATUS"/>
+      <keyMapping columnObjectName="Join_2" columnName="CC_BRIDGING_STATUS"/>
+    </attribute>
+  </attributes>
+  <calculatedAttributes/>
+  <baseMeasures>
+    <measure id="ACCUMULATED_TOCS_TIME" order="13" aggregationType="max" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="ACCUMULATED_TOCS_TIME"/>
+      <measureMapping columnObjectName="Join_2" columnName="ACCUMULATED_TOCS_TIME"/>
+    
+      <exceptionAggregationMetadata/>
+    </measure>
+    <measure id="CM_TIME_LEFT_MIN" order="14" aggregationType="min" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="CM_TIME_LEFT_MIN"/>
+      <measureMapping columnObjectName="Join_2" columnName="CM_TIME_LEFT_MIN"/>
+    
+      <exceptionAggregationMetadata/>
+    </measure>
+  
+    <measure id="CC_EVENT_DATE_TIME_TIMESTAMP" order="15" aggregationType="max" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="CC_EVENT_DATE_TIME_TIMESTAMP"/>
+      <measureMapping columnObjectName="Join_2" columnName="CC_EVENT_DATE_TIME_TIMESTAMP"/>
+    
+  
+      <exceptionAggregationMetadata/>
+  
+    </measure>
+  
+    <measure id="CM_HU_IN_WARNING" order="20" aggregationType="sum" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="CM_HU_IN_WARNING"/>
+      <measureMapping columnObjectName="Join_2" columnName="CM_HU_IN_WARNING"/>
+    
+  
+      <exceptionAggregationMetadata/>
+  
+    </measure>
+    <measure id="CM_HU_PAST_TOCS" order="21" aggregationType="sum" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="CM_HU_PAST_TOCS"/>
+      <measureMapping columnObjectName="Join_2" columnName="CM_HU_PAST_TOCS"/>
+    
+      <exceptionAggregationMetadata/>
+    </measure>
+    <measure id="CM_WARNING_TIME_LEFT_MINS" order="22" aggregationType="min" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="CM_WARNING_TIME_LEFT_MINS"/>
+      <measureMapping columnObjectName="Join_2" columnName="CM_WARNING_TIME_LEFT_MINS"/>
+    
+      <exceptionAggregationMetadata/>
+    </measure>
+  
+    <measure id="Rank" order="25" aggregationType="sum" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="Rank"/>
+      <measureMapping columnObjectName="Join_2" columnName="Rank"/>
+    
+  
+      <exceptionAggregationMetadata/>
+  
+    </measure>
+    <measure id="CC_EVENT_PRIORITY" order="26" aggregationType="sum" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="CC_EVENT_PRIORITY"/>
+      <measureMapping columnObjectName="Join_2" columnName="CC_EVENT_PRIORITY"/>
+    
+      <exceptionAggregationMetadata/>
+    </measure>
+  
+    <measure id="TOTAL_GI_QUANTITY" order="28" aggregationType="sum" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="GI_QUANTITY"/>
+      <measureMapping columnObjectName="Join_2" columnName="TOTAL_GI_QUANTITY"/>
+    
+  
+      <exceptionAggregationMetadata/>
+  
+    </measure></baseMeasures>
+  <calculatedMeasures/>
+  <restrictedMeasures>
+    <measure id="RM_TOTAL_GI_QUANTITY" order="27" aggregationType="sum" datatype="DECIMAL" length="34" scale="null" baseMeasure="TOTAL_GI_QUANTITY" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription=""/>
+      <restrictionExpression>&quot;EVENT_TYPE&quot;='M'</restrictionExpression><restrictionExpression>&quot;EVENT_TYPE&quot;='M'</restrictionExpression><restrictionExpression>&quot;EVENT_TYPE&quot;='M'</restrictionExpression><restrictionExpression>&quot;EVENT_TYPE&quot;='M'</restrictionExpression><restrictionExpression>&quot;EVENT_TYPE&quot;='M'</restrictionExpression><restrictionExpression>&quot;EVENT_TYPE&quot;='M'</restrictionExpression><restrictionExpression>&quot;EVENT_TYPE&quot;='M'</restrictionExpression><restrictionExpression>&quot;EVENT_TYPE&quot;='M'</restrictionExpression>
+      <exceptionAggregationMetadata/>
+    </measure>
+  </restrictedMeasures>
+  <localDimensions/>
+
+
+  <filter>&quot;EVENT_DATE&quot; &gt;= '$$IP_EVENT_DATE_FROM$$' and
+&quot;EVENT_DATE&quot; &lt;= '$$IP_EVENT_DATE_TO$$'</filter>
+
+</logicalModel>
+<layout>
+  <shapes>
+    <shape expanded="true" modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+      <upperLeftCorner x="92" y="112"/>
+    
+      <rectangleSize width="160"/>
+    </shape>
+  
+    <shape expanded="true" modelObjectName="Projection_1" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="1030"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+    <shape expanded="true" modelObjectName="Join_3" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="902"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+    <shape modelObjectName="COM_ORGANON_TOCS_EVENTS" modelObjectNameSpace="Join_3" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="320" y="30"/>
+      <rectangleSize width="255"/>
+    </shape>
+    <shape modelObjectName="Projection_1" modelObjectNameSpace="Join_3" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="620" y="30"/>
+      <rectangleSize width="250"/>
+    </shape>
+  
+    
+  
+    <shape expanded="false" modelObjectName="Aggr_Events" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="782"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+  
+    <shape expanded="true" modelObjectName="Join_1" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="642"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+    <shape modelObjectName="Aggr_Events" modelObjectNameSpace="Join_1" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="20" y="30"/>
+      <rectangleSize width="250"/>
+    </shape>
+    <shape modelObjectName="COM_ORGANON_TOCS_HU_CONSUMPTION" modelObjectNameSpace="Join_1" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="320" y="30"/>
+      <rectangleSize width="290"/>
+    </shape>
+  
+    <shape expanded="true" modelObjectName="Join_Event_Material" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="502"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+    <shape modelObjectName="Join_1" modelObjectNameSpace="Join_Event_Material" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="20" y="30"/>
+      <rectangleSize width="250"/>
+    </shape>
+    <shape modelObjectName="MANUALADJUSTMENTSERVICE_MATERIALMASTERTRANSACTION" modelObjectNameSpace="Join_Event_Material" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="320" y="30"/>
+      <rectangleSize width="259"/>
+    </shape>
+  
+    <shape expanded="true" modelObjectName="Rank_1" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="377"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+    <shape expanded="true" modelObjectName="Join_2" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="237"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+    <shape modelObjectName="Rank_1" modelObjectNameSpace="Join_2" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="20" y="30"/>
+      <rectangleSize width="250"/>
+    </shape>
+    <shape modelObjectName="com.organon.tocs::GI_QUANTITY_FOR_HU" modelObjectNameSpace="Join_2" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="320" y="30"/>
+      <rectangleSize width="312"/>
+    </shape></shapes>
+</layout>
+</Calculation:scenario>

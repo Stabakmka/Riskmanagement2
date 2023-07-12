@@ -1,0 +1,741 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" id="com.organon.tocs::CV_TOCS_INV_MON_RPT" applyPrivilegeType="NONE" dataCategory="CUBE" schemaVersion="3.0" hierarchyGeneration="SQL" outputViewType="Aggregation" cacheInvalidationPeriod="NONE" enforceSqlExecution="true">
+<descriptions defaultDescription="eventsView.hdbcalculationview"/>
+<localVariables>
+  <variable id="IP_EVENT_FROM_DATE" parameter="true">
+    <descriptions defaultDescription="Event Date From"/>
+    <variableProperties datatype="DATE" mandatory="true" defaultExpressionLanguage="SQL">
+      <valueDomain type="Date"/>
+      <selection multiLine="false" type="SingleValue"/>
+      <defaultExpression>ADD_YEARS(CURRENT_UTCDATE, -2)</defaultExpression>
+    </variableProperties>
+  </variable>
+  <variable id="IP_EVENT_TO_DATE" parameter="true">
+    <descriptions defaultDescription="Event Date To"/>
+    <variableProperties datatype="DATE" mandatory="true" defaultExpressionLanguage="SQL">
+      <valueDomain type="Date"/>
+      <selection multiLine="false" type="SingleValue"/>
+      <defaultExpression>CURRENT_UTCDATE</defaultExpression>
+    </variableProperties>
+  </variable>
+  <variable id="XS_APPLICATIONUSER" type="session"/>
+</localVariables>
+<variableMappings/>
+<executionHints name="query_level_sql_hints" value="RESULT_CACHE"/>
+<executionHints name="qo_pop_hints" value="RESULT_CACHE"/>
+<dataSources>
+  <DataSource id="COM_ORGANON_TOCS_USER_PLANT_ROLE_MAPPING">
+    <resourceUri>COM_ORGANON_TOCS_USER_PLANT_ROLE_MAPPING</resourceUri>
+  </DataSource>
+  <DataSource id="com.organon.tocs::EVENTS_PARTITIONED_BY_HU">
+    <resourceUri>com.organon.tocs::EVENTS_PARTITIONED_BY_HU</resourceUri>
+  </DataSource>
+  <DataSource id="COM_ORGANON_TOCS_VT_STORAGE_TYPE">
+    <resourceUri>COM_ORGANON_TOCS_VT_STORAGE_TYPE</resourceUri>
+  </DataSource>
+  <DataSource id="COM_ORGANON_TOCS_HU_OUT_OF_STOCK">
+    <resourceUri>COM_ORGANON_TOCS_HU_OUT_OF_STOCK</resourceUri>
+  </DataSource>
+  <DataSource id="MANUALADJUSTMENTSERVICE_MATERIALMASTERTRANSACTION">
+    <resourceUri>MANUALADJUSTMENTSERVICE_MATERIALMASTERTRANSACTION</resourceUri>
+  </DataSource>
+  <DataSource id="COM_ORGANON_TOCS_HU_GOODS_RECEIPT_POSTING">
+    <resourceUri>COM_ORGANON_TOCS_HU_GOODS_RECEIPT_POSTING</resourceUri>
+  </DataSource>
+</dataSources>
+<snapshotProcedures/>
+<staticResultCache cacheEnabled="true" retentionPeriod="60" force="false">
+  <cacheColumn id="WAREHOUSE_ID"/>
+  <cacheColumn id="PLANT_ID"/>
+  <cacheColumn id="BATCH_ID"/>
+  <cacheColumn id="MATERIAL_ID"/>
+  <cacheColumn id="DEST_STORAGE_TYPE"/>
+  <cacheColumn id="DEST_HU_ID"/>
+  <cacheColumn id="DEST_STORAGE_BIN"/>
+  <cacheColumn id="CURRENT_STATUS"/>
+  <cacheColumn id="PROCESS_ORDER_ID"/>
+</staticResultCache>
+<calculationViews>
+  <calculationView xsi:type="Calculation:ProjectionView" id="Projection_1" filterExpressionLanguage="SQL">
+    <viewAttributes>
+      <viewAttribute id="PLANT_ID"/>
+      <viewAttribute id="BTP_USER_NAME"/>
+    </viewAttributes>
+    <calculatedViewAttributes/>
+    <input node="COM_ORGANON_TOCS_USER_PLANT_ROLE_MAPPING"/>
+    <filter>UPPER(&quot;BTP_USER_NAME&quot;)='??XS_APPLICATIONUSER??'</filter>
+  </calculationView>
+  <calculationView xsi:type="Calculation:JoinView" id="Join_3" cardinality="CN_1" joinType="inner">
+    <viewAttributes>
+      <viewAttribute id="BATCH_ID"/>
+      <viewAttribute id="ACCUMULATED_TOCS_TIME" aggregationType="sum"/>
+      <viewAttribute id="WAREHOUSE_ID"/>
+      <viewAttribute id="PLANT_ID"/>
+      <viewAttribute id="MATERIAL_ID"/>
+      <viewAttribute id="DEST_STORAGE_TYPE"/>
+      <viewAttribute id="DEST_HU_ID"/>
+      <viewAttribute id="DEST_STORAGE_BIN"/>
+      <viewAttribute id="ROW_NUM" aggregationType="sum"/>
+      <viewAttribute id="EVENT_DATE"/>
+      <viewAttribute id="PROCESS_ORDER_ID"/>
+      <viewAttribute id="MANDT"/>
+      <viewAttribute id="EVENT_TIME"/>
+      <viewAttribute id="EVENT_DATE_UTC" aggregationType="min"/>
+      <viewAttribute id="QUANTITY" aggregationType="sum"/>
+      <viewAttribute id="EVENT_TYPE"/>
+      <viewAttribute hidden="true" id="JOIN$PLANT_ID$PLANT_ID"/>
+    </viewAttributes>
+    <calculatedViewAttributes/>
+    <input node="com.organon.tocs::EVENTS_PARTITIONED_BY_HU">
+      <mapping xsi:type="Calculation:AttributeMapping" target="BATCH_ID" source="BATCH_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="ACCUMULATED_TOCS_TIME" source="ACCUMULATED_TOCS_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WAREHOUSE_ID" source="WAREHOUSE_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MATERIAL_ID" source="MATERIAL_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_TYPE" source="DEST_STORAGE_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_HU_ID" source="DEST_HU_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_BIN" source="DEST_STORAGE_BIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="ROW_NUM" source="ROW_NUM"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_DATE" source="EVENT_DATE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PROCESS_ORDER_ID" source="PROCESS_ORDER_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MANDT" source="MANDT"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TIME" source="EVENT_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_DATE_UTC" source="EVENT_DATE_UTC"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="QUANTITY" source="QUANTITY"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TYPE" source="EVENT_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$PLANT_ID$PLANT_ID" source="PLANT_ID"/>
+    </input>
+    <input node="Projection_1">
+      <mapping xsi:type="Calculation:AttributeMapping" target="PLANT_ID" source="PLANT_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$PLANT_ID$PLANT_ID" source="PLANT_ID"/>
+    </input>
+    <joinAttribute name="JOIN$PLANT_ID$PLANT_ID"/>
+  </calculationView>
+  <calculationView xsi:type="Calculation:JoinView" id="Join_4" cardinality="CN_1" joinType="leftOuter">
+    <viewAttributes>
+      <viewAttribute id="BATCH_ID"/>
+      <viewAttribute id="ACCUMULATED_TOCS_TIME" aggregationType="sum"/>
+      <viewAttribute id="WAREHOUSE_ID"/>
+      <viewAttribute id="PLANT_ID"/>
+      <viewAttribute id="MATERIAL_ID"/>
+      <viewAttribute id="DEST_STORAGE_TYPE"/>
+      <viewAttribute id="DEST_HU_ID"/>
+      <viewAttribute id="DEST_STORAGE_BIN"/>
+      <viewAttribute id="ROW_NUM" aggregationType="sum"/>
+      <viewAttribute id="EVENT_DATE"/>
+      <viewAttribute id="PROCESS_ORDER_ID"/>
+      <viewAttribute id="MANDT"/>
+      <viewAttribute id="SENS_TYPE"/>
+      <viewAttribute id="EVENT_TIME"/>
+    
+      <viewAttribute id="EVENT_DATE_UTC" aggregationType="min"/>
+    
+      <viewAttribute id="QUANTITY" aggregationType="sum"/>
+    
+      <viewAttribute id="EVENT_TYPE"/>
+      <viewAttribute hidden="true" id="JOIN$MANDT$MANDT"/>
+      <viewAttribute hidden="true" id="JOIN$WAREHOUSE_ID$LGNUM"/>
+      <viewAttribute hidden="true" id="JOIN$DEST_STORAGE_TYPE$LGTYP"/>
+    </viewAttributes>
+    <calculatedViewAttributes/>
+    <input node="Join_3">
+      <mapping xsi:type="Calculation:AttributeMapping" target="BATCH_ID" source="BATCH_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="ACCUMULATED_TOCS_TIME" source="ACCUMULATED_TOCS_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WAREHOUSE_ID" source="WAREHOUSE_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PLANT_ID" source="PLANT_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MATERIAL_ID" source="MATERIAL_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_TYPE" source="DEST_STORAGE_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_HU_ID" source="DEST_HU_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_BIN" source="DEST_STORAGE_BIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="ROW_NUM" source="ROW_NUM"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_DATE" source="EVENT_DATE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PROCESS_ORDER_ID" source="PROCESS_ORDER_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MANDT" source="MANDT"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TIME" source="EVENT_TIME"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_DATE_UTC" source="EVENT_DATE_UTC"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="QUANTITY" source="QUANTITY"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TYPE" source="EVENT_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$MANDT$MANDT" source="MANDT"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$WAREHOUSE_ID$LGNUM" source="WAREHOUSE_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$DEST_STORAGE_TYPE$LGTYP" source="DEST_STORAGE_TYPE"/>
+    </input>
+    <input node="COM_ORGANON_TOCS_VT_STORAGE_TYPE">
+      <mapping xsi:type="Calculation:AttributeMapping" target="SENS_TYPE" source="SENS_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$MANDT$MANDT" source="MANDT"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$WAREHOUSE_ID$LGNUM" source="LGNUM"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$DEST_STORAGE_TYPE$LGTYP" source="LGTYP"/>
+    </input>
+    <joinAttribute name="JOIN$MANDT$MANDT"/>
+    <joinAttribute name="JOIN$WAREHOUSE_ID$LGNUM"/>
+    <joinAttribute name="JOIN$DEST_STORAGE_TYPE$LGTYP"/>
+  </calculationView>
+  <calculationView xsi:type="Calculation:JoinView" id="Join_5" cardinality="CN_1" joinType="leftOuter">
+    <viewAttributes>
+      <viewAttribute id="BATCH_ID"/>
+      <viewAttribute id="ACCUMULATED_TOCS_TIME" aggregationType="sum"/>
+      <viewAttribute id="WAREHOUSE_ID"/>
+      <viewAttribute id="PLANT_ID"/>
+      <viewAttribute id="MATERIAL_ID"/>
+      <viewAttribute id="DEST_STORAGE_TYPE"/>
+      <viewAttribute id="DEST_HU_ID"/>
+      <viewAttribute id="DEST_STORAGE_BIN"/>
+      <viewAttribute id="ROW_NUM" aggregationType="sum"/>
+      <viewAttribute id="EVENT_DATE"/>
+      <viewAttribute id="PROCESS_ORDER_ID"/>
+      <viewAttribute id="MANDT"/>
+      <viewAttribute id="SENS_TYPE"/>
+      <viewAttribute id="EVENT_TIME"/>
+      <viewAttribute id="EVENT_DATE_UTC" aggregationType="min"/>
+      <viewAttribute id="QUANTITY" aggregationType="sum"/>
+      <viewAttribute id="REMAINING_QTY" aggregationType="sum"/>
+    
+      <viewAttribute id="EVENT_TYPE"/>
+      <viewAttribute hidden="true" id="JOIN$DEST_HU_ID$DEST_HU_ID"/>
+    </viewAttributes>
+    <calculatedViewAttributes/>
+    <input node="Join_4">
+      <mapping xsi:type="Calculation:AttributeMapping" target="BATCH_ID" source="BATCH_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="ACCUMULATED_TOCS_TIME" source="ACCUMULATED_TOCS_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WAREHOUSE_ID" source="WAREHOUSE_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PLANT_ID" source="PLANT_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MATERIAL_ID" source="MATERIAL_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_TYPE" source="DEST_STORAGE_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_HU_ID" source="DEST_HU_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_BIN" source="DEST_STORAGE_BIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="ROW_NUM" source="ROW_NUM"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_DATE" source="EVENT_DATE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PROCESS_ORDER_ID" source="PROCESS_ORDER_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MANDT" source="MANDT"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="SENS_TYPE" source="SENS_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TIME" source="EVENT_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_DATE_UTC" source="EVENT_DATE_UTC"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="QUANTITY" source="QUANTITY"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TYPE" source="EVENT_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$DEST_HU_ID$DEST_HU_ID" source="DEST_HU_ID"/>
+    </input>
+    <input node="COM_ORGANON_TOCS_HU_OUT_OF_STOCK">
+      <mapping xsi:type="Calculation:AttributeMapping" target="REMAINING_QTY" source="REMAINING_QTY"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$DEST_HU_ID$DEST_HU_ID" source="DEST_HU_ID"/>
+    </input>
+    <joinAttribute name="JOIN$DEST_HU_ID$DEST_HU_ID"/>
+  </calculationView>
+  <calculationView xsi:type="Calculation:JoinView" id="Join_1" cardinality="CN_1" joinType="inner" optimizeJoinColumns="false" filterExpressionLanguage="SQL">
+    <viewAttributes>
+      <viewAttribute id="BATCH_ID"/>
+      <viewAttribute id="ACCUMULATED_TOCS_TIME" aggregationType="sum"/>
+      <viewAttribute id="WAREHOUSE_ID"/>
+      <viewAttribute id="PLANT_ID"/>
+      <viewAttribute id="MATERIAL_ID"/>
+      <viewAttribute id="DEST_STORAGE_TYPE"/>
+      <viewAttribute id="DEST_HU_ID"/>
+      <viewAttribute id="DEST_STORAGE_BIN"/>
+      <viewAttribute id="MAX_TOCS_TIME_DAYS" aggregationType="sum"/>
+      <viewAttribute id="MAX_TOCS_TIME_HRS" aggregationType="sum"/>
+      <viewAttribute id="MAX_TOCS_TIME_MIN" aggregationType="sum"/>
+      <viewAttribute id="WARNING_TIME_DAYS" aggregationType="sum"/>
+      <viewAttribute id="WARNING_TIME_HRS" aggregationType="sum"/>
+      <viewAttribute id="WARNING_TIME_MIN" aggregationType="sum"/>
+    
+      <viewAttribute id="MATERIAL_SENSITIVITY_TYPE"/>
+      <viewAttribute id="ROW_NUM" aggregationType="sum"/>
+      <viewAttribute id="EVENT_DATE"/>
+    
+      <viewAttribute id="PROCESS_ORDER_ID"/>
+    
+      <viewAttribute id="MANDT"/>
+    
+      <viewAttribute id="MAXTIMEINMILLI" aggregationType="sum"/>
+      <viewAttribute id="WARNTIMEINMILLI" aggregationType="sum"/>
+    
+      <viewAttribute id="STORAGE_SENSITIVITY_TYPE"/>
+      <viewAttribute id="EVENT_TIME"/>
+    
+      <viewAttribute id="EVENT_DATE_UTC" aggregationType="min"/>
+    
+      <viewAttribute id="QUANTITY" aggregationType="sum"/>
+    
+      <viewAttribute id="REMAINING_QTY" aggregationType="sum"/>
+    
+      <viewAttribute id="EVENT_TYPE"/>
+      <viewAttribute hidden="true" id="JOIN$PLANT_ID$PLANT"/>
+      <viewAttribute hidden="true" id="JOIN$MATERIAL_ID$MATERIAL"/>
+      <viewAttribute hidden="true" id="JOIN$MANDT$MANDT"/>
+    </viewAttributes>
+    <calculatedViewAttributes>
+      <calculatedViewAttribute id="ACC_TOCS_DAYS_HRS_MIN" datatype="NVARCHAR" length="20" expressionLanguage="SQL">
+        <formula>CONCAT(
+CONCAT(
+CONCAT(
+CONCAT(TO_INT(&quot;CM_ACC_TOCS_MIN&quot;/(60 * 24)), ':'),
+ LPAD(TO_INT(MOD(&quot;CM_ACC_TOCS_MIN&quot; / 60, 24)),2,'0')),':'),
+ LPAD(TO_INT(MOD(&quot;CM_ACC_TOCS_MIN&quot;, 60)),2,'0'))</formula>
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="MAX_TOCS_DAYS_HRS_MIN" datatype="NVARCHAR" length="20" expressionLanguage="SQL">
+        <formula>CONCAT(
+    CONCAT(
+        CONCAT(
+            CONCAT(&quot;MAX_TOCS_TIME_DAYS&quot;, ':'),
+            LPAD(&quot;MAX_TOCS_TIME_HRS&quot;,2,'0')
+        ),':'
+    ),LPAD(&quot;MAX_TOCS_TIME_MIN&quot;,2,'0')
+)</formula>
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="TIME_LEFT_DAYS_HRS_MIN" datatype="NVARCHAR" length="20" expressionLanguage="SQL">
+        <formula>CASE  
+	 WHEN &quot;TOTAL_TIME_LEFT_MIN&quot; &lt; 0 then 
+CONCAT('-',
+CONCAT(
+CONCAT(
+CONCAT(
+CONCAT(TO_INT(ABS(&quot;TOTAL_TIME_LEFT_MIN&quot;)/(60 * 24)), ':'),
+ LPAD(TO_INT(MOD(ABS(&quot;TOTAL_TIME_LEFT_MIN&quot;) / 60, 24)),2,'0')),':'),
+ LPAD(TO_INT(MOD(ABS(&quot;TOTAL_TIME_LEFT_MIN&quot;), 60)),2,'0'))) 
+	 ELSE 
+CONCAT(
+CONCAT(
+CONCAT(
+CONCAT(TO_INT(&quot;TOTAL_TIME_LEFT_MIN&quot;/(60 * 24)), ':'),
+ LPAD(TO_INT(MOD(&quot;TOTAL_TIME_LEFT_MIN&quot; / 60, 24)),2,'0')),':'),
+ LPAD(TO_INT(MOD(&quot;TOTAL_TIME_LEFT_MIN&quot;, 60)),2,'0'))
+ END
+ </formula>
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="IN_WARNING" datatype="TINYINT" expressionLanguage="SQL">
+        <formula>&quot;CM_ACC_TOCS_MIN&quot; &gt;= &quot;CM_WARN_TIME_MILLI&quot;/(1000 * 60) AND &quot;CM_ACC_TOCS_MIN&quot; &lt; &quot;CM_MAX_TOCS_TIME_MILLI&quot;/(1000 * 60)</formula>
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="PAST_TOCS" datatype="TINYINT" expressionLanguage="SQL">
+        <formula>CASE
+	 WHEN &quot;CM_ACC_TOCS_MIN&quot; &gt;= &quot;CM_MAX_TOCS_TIME_MILLI&quot;/(1000 * 60) THEN 1 ELSE 0
+END</formula>
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="TOTAL_TIME_LEFT_MIN" datatype="BIGINT" expressionLanguage="SQL">
+        <formula>CEIL(&quot;CM_MAX_TOCS_TIME_MILLI&quot;/(1000 * 60) - &quot;CM_ACC_TOCS_MIN&quot;)</formula>
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="WARNING_TIME_LEFT_MIN" datatype="BIGINT" expressionLanguage="SQL">
+        <formula>ROUND((&quot;CM_MAX_TOCS_TIME_MILLI&quot; - &quot;CM_WARN_TIME_MILLI&quot;)/(1000 * 60))</formula>
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="CM_MAX_TOCS_TIME_MILLI" datatype="DECIMAL" length="13" scale="1" expressionLanguage="SQL">
+        <formula>TO_DECIMAL(&quot;MAXTIMEINMILLI&quot;)</formula>
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="CM_WARN_TIME_MILLI" datatype="DECIMAL" length="13" scale="1" expressionLanguage="SQL">
+        <formula>TO_DECIMAL(&quot;WARNTIMEINMILLI&quot;)</formula>
+      </calculatedViewAttribute>
+    
+      <calculatedViewAttribute id="CC_STATUS" datatype="NVARCHAR" length="13" expressionLanguage="SQL">
+    
+        <formula>CASE 
+	 WHEN &quot;CM_ACC_TOCS_MIN&quot; &gt;= &quot;CM_MAX_TOCS_TIME_MILLI&quot;/(1000 * 60) then 'RED' 
+	 ELSE 
+	    CASE
+	        WHEN &quot;CM_ACC_TOCS_MIN&quot; &gt;= &quot;CM_WARN_TIME_MILLI&quot;/(1000 * 60) then 'YELLOW'
+	        ELSE 'GREEN'
+	    END
+ END</formula>
+    
+      </calculatedViewAttribute>
+    
+      <calculatedViewAttribute id="CM_ACC_TOCS_MIN" datatype="BIGINT" expressionLanguage="SQL">
+    
+        <formula>CASE 
+	 WHEN &quot;CURRENT_STATUS&quot;='ACTIVE' 
+	 then &quot;ACCUMULATED_TOCS_TIME&quot;/(1000 * 60) + SECONDS_BETWEEN(&quot;CC_EVENT_DATE_TIME_TIMESTAMP&quot;,CURRENT_UTCTIMESTAMP)/60
+	 ELSE &quot;ACCUMULATED_TOCS_TIME&quot;/(1000 * 60)
+END</formula>
+    
+      </calculatedViewAttribute>
+    
+      <calculatedViewAttribute id="CURRENT_STATUS" datatype="NVARCHAR" length="13" expressionLanguage="SQL">
+    
+        <formula>CASE
+    WHEN &quot;EVENT_TYPE&quot;='M' OR &quot;EVENT_TYPE&quot;='P' OR &quot;EVENT_TYPE&quot;='T'
+        then 'INACTIVE'
+    ELSE  
+        CASE
+        WHEN &quot;MATERIAL_SENSITIVITY_TYPE&quot; = &quot;STORAGE_SENSITIVITY_TYPE&quot; 
+	        then 'INACTIVE' 
+	    ELSE 'ACTIVE'
+	    END
+END</formula>
+    
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="CC_EVENT_DATE_TIME_TIMESTAMP" datatype="NVARCHAR" length="13" expressionLanguage="SQL">
+        <formula>&quot;EVENT_DATE_UTC&quot;</formula>
+      </calculatedViewAttribute>
+      <calculatedViewAttribute id="IS_ACTIVE" datatype="INTEGER" expressionLanguage="SQL">
+        <formula>&quot;CURRENT_STATUS&quot;='ACTIVE'</formula>
+      </calculatedViewAttribute>
+    
+      <calculatedViewAttribute id="CC_IN_STOCK" datatype="NVARCHAR" length="13" expressionLanguage="SQL">
+    
+        <formula>CASE &quot;REMAINING_QTY&quot;
+	 WHEN 0 then 'NOT IN STOCK'
+	 ELSE 'IN STOCK'
+ END</formula>
+    
+      </calculatedViewAttribute>
+    </calculatedViewAttributes>
+    <input node="Join_5">
+      <mapping xsi:type="Calculation:AttributeMapping" target="BATCH_ID" source="BATCH_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="ACCUMULATED_TOCS_TIME" source="ACCUMULATED_TOCS_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WAREHOUSE_ID" source="WAREHOUSE_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PLANT_ID" source="PLANT_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MATERIAL_ID" source="MATERIAL_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_TYPE" source="DEST_STORAGE_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_HU_ID" source="DEST_HU_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_BIN" source="DEST_STORAGE_BIN"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="ROW_NUM" source="ROW_NUM"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_DATE" source="EVENT_DATE"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="PROCESS_ORDER_ID" source="PROCESS_ORDER_ID"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="MANDT" source="MANDT"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="STORAGE_SENSITIVITY_TYPE" source="SENS_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TIME" source="EVENT_TIME"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_DATE_UTC" source="EVENT_DATE_UTC"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="QUANTITY" source="QUANTITY"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="REMAINING_QTY" source="REMAINING_QTY"/>
+    
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TYPE" source="EVENT_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$PLANT_ID$PLANT" source="PLANT_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$MATERIAL_ID$MATERIAL" source="MATERIAL_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$MANDT$MANDT" source="MANDT"/>
+    </input>
+    <input node="MANUALADJUSTMENTSERVICE_MATERIALMASTERTRANSACTION">
+      <mapping xsi:type="Calculation:AttributeMapping" target="MAX_TOCS_TIME_DAYS" source="MAXTIMEDAYS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MAX_TOCS_TIME_HRS" source="MAXTIMEHRS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MAX_TOCS_TIME_MIN" source="MAXTIMEMIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WARNING_TIME_DAYS" source="WARNTIMEDAYS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WARNING_TIME_HRS" source="WARNTIMEHRS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WARNING_TIME_MIN" source="WARNTIMEMIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MATERIAL_SENSITIVITY_TYPE" source="SENSITIVITYTYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MAXTIMEINMILLI" source="MAXTIMEINMILLI"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WARNTIMEINMILLI" source="WARNTIMEINMILLI"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$PLANT_ID$PLANT" source="PLANT"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$MATERIAL_ID$MATERIAL" source="MATERIAL"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$MANDT$MANDT" source="MANDT"/>
+    </input>
+    <filter>&quot;EVENT_DATE&quot;&lt;= '$$IP_EVENT_TO_DATE$$' AND 
+&quot;EVENT_DATE&quot; &gt;= '$$IP_EVENT_FROM_DATE$$' AND
+&quot;ROW_NUM&quot; = 1</filter>
+    <joinAttribute name="JOIN$PLANT_ID$PLANT"/>
+    <joinAttribute name="JOIN$MATERIAL_ID$MATERIAL"/>
+    <joinAttribute name="JOIN$MANDT$MANDT"/>
+  </calculationView>
+  <calculationView xsi:type="Calculation:JoinView" id="Join_6" cardinality="CN_1" joinType="leftOuter">
+    <viewAttributes>
+      <viewAttribute id="BATCH_ID"/>
+      <viewAttribute id="ACCUMULATED_TOCS_TIME" aggregationType="sum"/>
+      <viewAttribute id="WAREHOUSE_ID"/>
+      <viewAttribute id="PLANT_ID"/>
+      <viewAttribute id="MATERIAL_ID"/>
+      <viewAttribute id="DEST_STORAGE_TYPE"/>
+      <viewAttribute id="DEST_HU_ID"/>
+      <viewAttribute id="DEST_STORAGE_BIN"/>
+      <viewAttribute id="MAX_TOCS_TIME_DAYS" aggregationType="sum"/>
+      <viewAttribute id="MAX_TOCS_TIME_HRS" aggregationType="sum"/>
+      <viewAttribute id="MAX_TOCS_TIME_MIN" aggregationType="sum"/>
+      <viewAttribute id="WARNING_TIME_DAYS" aggregationType="sum"/>
+      <viewAttribute id="WARNING_TIME_HRS" aggregationType="sum"/>
+      <viewAttribute id="WARNING_TIME_MIN" aggregationType="sum"/>
+      <viewAttribute id="MATERIAL_SENSITIVITY_TYPE"/>
+      <viewAttribute id="ROW_NUM" aggregationType="sum"/>
+      <viewAttribute id="EVENT_DATE"/>
+      <viewAttribute id="PROCESS_ORDER_ID"/>
+      <viewAttribute id="MANDT"/>
+      <viewAttribute id="MAXTIMEINMILLI" aggregationType="sum"/>
+      <viewAttribute id="WARNTIMEINMILLI" aggregationType="sum"/>
+      <viewAttribute id="STORAGE_SENSITIVITY_TYPE"/>
+      <viewAttribute id="EVENT_TIME"/>
+      <viewAttribute id="EVENT_DATE_UTC" aggregationType="min"/>
+      <viewAttribute id="QUANTITY" aggregationType="sum"/>
+      <viewAttribute id="REMAINING_QTY" aggregationType="sum"/>
+      <viewAttribute id="EVENT_TYPE"/>
+      <viewAttribute id="ACC_TOCS_DAYS_HRS_MIN"/>
+      <viewAttribute id="MAX_TOCS_DAYS_HRS_MIN"/>
+      <viewAttribute id="TIME_LEFT_DAYS_HRS_MIN"/>
+      <viewAttribute id="IN_WARNING" aggregationType="sum"/>
+      <viewAttribute id="PAST_TOCS" aggregationType="sum"/>
+      <viewAttribute id="TOTAL_TIME_LEFT_MIN" aggregationType="sum"/>
+      <viewAttribute id="WARNING_TIME_LEFT_MIN" aggregationType="sum"/>
+      <viewAttribute id="CM_MAX_TOCS_TIME_MILLI" aggregationType="sum"/>
+      <viewAttribute id="CM_WARN_TIME_MILLI" aggregationType="sum"/>
+      <viewAttribute id="CC_STATUS"/>
+      <viewAttribute id="CM_ACC_TOCS_MIN" aggregationType="sum"/>
+      <viewAttribute id="CURRENT_STATUS"/>
+      <viewAttribute id="CC_EVENT_DATE_TIME_TIMESTAMP"/>
+      <viewAttribute id="IS_ACTIVE" aggregationType="sum"/>
+      <viewAttribute id="CC_IN_STOCK"/>
+      <viewAttribute id="GR_PROCESS_ORDER_ID"/>
+      <viewAttribute hidden="true" id="JOIN$DEST_HU_ID$HU_ID"/>
+    </viewAttributes>
+    <calculatedViewAttributes>
+      <calculatedViewAttribute id="CC_PROCESS_ORDER" datatype="NVARCHAR" length="13" expressionLanguage="SQL">
+        <formula>CASE 
+	 WHEN &quot;PROCESS_ORDER_ID&quot;='' OR &quot;PROCESS_ORDER_ID&quot;=NULL 
+	 then &quot;GR_PROCESS_ORDER_ID&quot;
+	 ELSE &quot;PROCESS_ORDER_ID&quot;
+ END</formula>
+      </calculatedViewAttribute>
+    </calculatedViewAttributes>
+    <input node="Join_1">
+      <mapping xsi:type="Calculation:AttributeMapping" target="BATCH_ID" source="BATCH_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="ACCUMULATED_TOCS_TIME" source="ACCUMULATED_TOCS_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WAREHOUSE_ID" source="WAREHOUSE_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PLANT_ID" source="PLANT_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MATERIAL_ID" source="MATERIAL_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_TYPE" source="DEST_STORAGE_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_HU_ID" source="DEST_HU_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_BIN" source="DEST_STORAGE_BIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MAX_TOCS_TIME_DAYS" source="MAX_TOCS_TIME_DAYS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MAX_TOCS_TIME_HRS" source="MAX_TOCS_TIME_HRS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MAX_TOCS_TIME_MIN" source="MAX_TOCS_TIME_MIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WARNING_TIME_DAYS" source="WARNING_TIME_DAYS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WARNING_TIME_HRS" source="WARNING_TIME_HRS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WARNING_TIME_MIN" source="WARNING_TIME_MIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MATERIAL_SENSITIVITY_TYPE" source="MATERIAL_SENSITIVITY_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="ROW_NUM" source="ROW_NUM"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_DATE" source="EVENT_DATE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PROCESS_ORDER_ID" source="PROCESS_ORDER_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MANDT" source="MANDT"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MAXTIMEINMILLI" source="MAXTIMEINMILLI"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WARNTIMEINMILLI" source="WARNTIMEINMILLI"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="STORAGE_SENSITIVITY_TYPE" source="STORAGE_SENSITIVITY_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TIME" source="EVENT_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_DATE_UTC" source="EVENT_DATE_UTC"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="QUANTITY" source="QUANTITY"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="REMAINING_QTY" source="REMAINING_QTY"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TYPE" source="EVENT_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="ACC_TOCS_DAYS_HRS_MIN" source="ACC_TOCS_DAYS_HRS_MIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MAX_TOCS_DAYS_HRS_MIN" source="MAX_TOCS_DAYS_HRS_MIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="TIME_LEFT_DAYS_HRS_MIN" source="TIME_LEFT_DAYS_HRS_MIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="IN_WARNING" source="IN_WARNING"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PAST_TOCS" source="PAST_TOCS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="TOTAL_TIME_LEFT_MIN" source="TOTAL_TIME_LEFT_MIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WARNING_TIME_LEFT_MIN" source="WARNING_TIME_LEFT_MIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CM_MAX_TOCS_TIME_MILLI" source="CM_MAX_TOCS_TIME_MILLI"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CM_WARN_TIME_MILLI" source="CM_WARN_TIME_MILLI"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CC_STATUS" source="CC_STATUS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CM_ACC_TOCS_MIN" source="CM_ACC_TOCS_MIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CURRENT_STATUS" source="CURRENT_STATUS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CC_EVENT_DATE_TIME_TIMESTAMP" source="CC_EVENT_DATE_TIME_TIMESTAMP"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="IS_ACTIVE" source="IS_ACTIVE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CC_IN_STOCK" source="CC_IN_STOCK"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$DEST_HU_ID$HU_ID" source="DEST_HU_ID"/>
+    </input>
+    <input node="COM_ORGANON_TOCS_HU_GOODS_RECEIPT_POSTING">
+      <mapping xsi:type="Calculation:AttributeMapping" target="GR_PROCESS_ORDER_ID" source="PROCESS_ORDER_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$DEST_HU_ID$HU_ID" source="HU_ID"/>
+    </input>
+    <joinAttribute name="JOIN$DEST_HU_ID$HU_ID"/>
+  </calculationView>
+</calculationViews>
+<logicalModel id="Join_6" filterExpressionLanguage="SQL">
+  <attributes>
+    <attribute id="BATCH_ID" order="1" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="BATCH_ID"/>
+      <keyMapping columnObjectName="Join_6" columnName="BATCH_ID"/>
+    </attribute>
+    <attribute id="WAREHOUSE_ID" order="2" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="WAREHOUSE_ID"/>
+      <keyMapping columnObjectName="Join_6" columnName="WAREHOUSE_ID"/>
+    </attribute>
+    <attribute id="PLANT_ID" order="3" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="PLANT_ID"/>
+      <keyMapping columnObjectName="Join_6" columnName="PLANT_ID"/>
+    </attribute>
+    <attribute id="MATERIAL_ID" order="4" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="MATERIAL_ID"/>
+      <keyMapping columnObjectName="Join_6" columnName="MATERIAL_ID"/>
+    </attribute>
+    <attribute id="DEST_STORAGE_TYPE" order="5" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="DEST_STORAGE_TYPE"/>
+      <keyMapping columnObjectName="Join_6" columnName="DEST_STORAGE_TYPE"/>
+    </attribute>
+    <attribute id="DEST_HU_ID" order="6" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="DEST_HU_ID"/>
+      <keyMapping columnObjectName="Join_6" columnName="DEST_HU_ID"/>
+    </attribute>
+    <attribute id="DEST_STORAGE_BIN" order="7" displayAttribute="false" attributeHierarchyActive="false" semanticType="empty">
+      <descriptions defaultDescription="DEST_STORAGE_BIN"/>
+      <keyMapping columnObjectName="Join_6" columnName="DEST_STORAGE_BIN"/>
+    </attribute>
+    <attribute id="MAX_TOCS_DAYS_HRS_MIN" order="8" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="MAX_TOCS_DAYS_HRS_MIN"/>
+      <keyMapping columnObjectName="Join_6" columnName="MAX_TOCS_DAYS_HRS_MIN"/>
+    </attribute>
+    <attribute id="TIME_LEFT_DAYS_HRS_MIN" order="9" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="TIME_LEFT_DAYS_HRS_MIN"/>
+      <keyMapping columnObjectName="Join_6" columnName="TIME_LEFT_DAYS_HRS_MIN"/>
+    </attribute>
+    <attribute id="CURRENT_STATUS" order="13" displayAttribute="false" attributeHierarchyActive="false" semanticType="empty">
+      <descriptions defaultDescription="CURRENT_STATUS"/>
+      <keyMapping columnObjectName="Join_6" columnName="CURRENT_STATUS"/>
+    </attribute>
+  
+    <attribute id="PROCESS_ORDER_ID" order="15" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="PROCESS_ORDER_ID"/>
+  
+      <keyMapping columnObjectName="Join_6" columnName="PROCESS_ORDER_ID"/>
+  
+    </attribute>
+  
+    <attribute id="EVENT_DATE" order="16" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="EVENT_DATE"/>
+  
+      <keyMapping columnObjectName="Join_6" columnName="EVENT_DATE"/>
+  
+    </attribute>
+  
+    <attribute id="CC_STATUS" order="17" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="CC_STATUS"/>
+  
+      <keyMapping columnObjectName="Join_6" columnName="CC_STATUS"/>
+  
+    </attribute>
+  
+    <attribute id="ACC_TOCS_DAYS_HRS_MIN" order="18" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="ACC_TOCS_DAYS_HRS_MIN"/>
+  
+      <keyMapping columnObjectName="Join_6" columnName="ACC_TOCS_DAYS_HRS_MIN"/>
+  
+    </attribute>
+  
+    <attribute id="CC_IN_STOCK" order="20" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="CC_IN_STOCK"/>
+  
+      <keyMapping columnObjectName="Join_6" columnName="CC_IN_STOCK"/>
+  
+    </attribute>
+  
+    <attribute id="CC_PROCESS_ORDER" order="21" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="CC_PROCESS_ORDER"/>
+  
+      <keyMapping columnObjectName="Join_6" columnName="CC_PROCESS_ORDER"/>
+  
+    </attribute>
+  </attributes>
+  <calculatedAttributes/>
+  <baseMeasures>
+    <measure id="IN_WARNING" order="10" aggregationType="sum" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="IN_WARNING"/>
+      <measureMapping columnObjectName="Join_6" columnName="IN_WARNING"/>
+    
+      <exceptionAggregationMetadata/>
+    </measure>
+    <measure id="PAST_TOCS" order="11" aggregationType="sum" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="PAST_TOCS"/>
+      <measureMapping columnObjectName="Join_6" columnName="PAST_TOCS"/>
+    
+      <exceptionAggregationMetadata/>
+    </measure>
+    <measure id="TIME_LEFT_MIN" order="12" aggregationType="min" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="TOTAL_TIME_LEFT_MIN"/>
+      <measureMapping columnObjectName="Join_6" columnName="TOTAL_TIME_LEFT_MIN"/>
+    
+      <exceptionAggregationMetadata/>
+    </measure>
+    <measure id="WARNING_TIME_LEFT_MIN" order="14" aggregationType="min" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="WARNING_TIME_LEFT_MIN"/>
+      <measureMapping columnObjectName="Join_6" columnName="WARNING_TIME_LEFT_MIN"/>
+    
+      <exceptionAggregationMetadata/>
+    </measure>
+    <measure id="IS_ACTIVE" order="19" aggregationType="sum" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="IS_ACTIVE"/>
+      <measureMapping columnObjectName="Join_6" columnName="IS_ACTIVE"/>
+    
+      <exceptionAggregationMetadata/>
+    </measure>
+  </baseMeasures>
+  <calculatedMeasures/>
+  <restrictedMeasures/>
+  <localDimensions/>
+
+  <filter>&quot;EVENT_DATE&quot;&lt;= '$$IP_EVENT_TO_DATE$$' AND 
+&quot;EVENT_DATE&quot; &gt;= '$$IP_EVENT_FROM_DATE$$'</filter>
+</logicalModel>
+<layout>
+  <shapes>
+    <shape expanded="true" modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+      <upperLeftCorner x="92" y="112"/>
+    
+      <rectangleSize width="160"/>
+    </shape>
+    <shape expanded="true" modelObjectName="Projection_1" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="902"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+    <shape expanded="true" modelObjectName="Join_3" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="762"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+    <shape modelObjectName="com.organon.tocs::EVENTS_PARTITIONED_BY_HU" modelObjectNameSpace="Join_3" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="320" y="30"/>
+      <rectangleSize width="358"/>
+    </shape>
+    <shape modelObjectName="Projection_1" modelObjectNameSpace="Join_3" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="620" y="30"/>
+      <rectangleSize width="250"/>
+    </shape>
+    <shape expanded="true" modelObjectName="Join_4" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="622"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+    <shape modelObjectName="Join_3" modelObjectNameSpace="Join_4" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="20" y="30"/>
+      <rectangleSize width="250"/>
+    </shape>
+    <shape modelObjectName="COM_ORGANON_TOCS_VT_STORAGE_TYPE" modelObjectNameSpace="Join_4" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="320" y="30"/>
+      <rectangleSize width="326"/>
+    </shape>
+    <shape expanded="true" modelObjectName="Join_5" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="482"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+    <shape modelObjectName="Join_4" modelObjectNameSpace="Join_5" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="20" y="30"/>
+      <rectangleSize width="250"/>
+    </shape>
+    <shape modelObjectName="COM_ORGANON_TOCS_HU_OUT_OF_STOCK" modelObjectNameSpace="Join_5" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="320" y="30"/>
+      <rectangleSize width="328"/>
+    </shape>
+  
+  
+  
+    <shape expanded="true" modelObjectName="Join_1" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="342"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+    <shape modelObjectName="Join_5" modelObjectNameSpace="Join_1" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="20" y="30"/>
+      <rectangleSize width="358"/>
+    </shape>
+    <shape modelObjectName="MANUALADJUSTMENTSERVICE_MATERIALMASTERTRANSACTION" modelObjectNameSpace="Join_1" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="320" y="30"/>
+      <rectangleSize width="237"/>
+    </shape>
+    <shape expanded="true" modelObjectName="Join_6" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="237"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+    <shape modelObjectName="Join_1" modelObjectNameSpace="Join_6" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="20" y="30"/>
+      <rectangleSize width="250"/>
+    </shape>
+    <shape modelObjectName="COM_ORGANON_TOCS_HU_GOODS_RECEIPT_POSTING" modelObjectNameSpace="Join_6" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="320" y="30"/>
+      <rectangleSize width="395"/>
+    </shape>
+  </shapes>
+</layout>
+</Calculation:scenario>

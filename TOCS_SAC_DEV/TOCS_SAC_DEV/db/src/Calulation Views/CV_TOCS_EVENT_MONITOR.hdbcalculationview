@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" id="com.organon.tocs::CV_TOCS_EVENT_MONITOR" applyPrivilegeType="NONE" dataCategory="CUBE" schemaVersion="3.0" hierarchyGeneration="SQL" outputViewType="Aggregation" cacheInvalidationPeriod="NONE" enforceSqlExecution="true">
+<descriptions defaultDescription="CV_TOCS_EVENT_MONITOR"/>
+<localVariables>
+  <variable id="IP_EVENT_DATE_FROM" parameter="true">
+    <descriptions defaultDescription="Event Date From"/>
+    <variableProperties datatype="DATE" mandatory="true" defaultExpressionLanguage="SQL">
+      <valueDomain type="Date"/>
+      <selection multiLine="false" type="SingleValue"/>
+      <defaultExpression>ADD_YEARS(CURRENT_UTCDATE, -1)</defaultExpression>
+    </variableProperties>
+  </variable>
+  <variable id="IP_EVENT_DATE_TO" parameter="true">
+    <descriptions defaultDescription="Event Date To"/>
+    <variableProperties datatype="DATE" mandatory="true" defaultExpressionLanguage="SQL">
+      <valueDomain type="Date"/>
+      <selection multiLine="false" type="SingleValue"/>
+      <defaultExpression>CURRENT_UTCDATE</defaultExpression>
+    </variableProperties>
+  </variable>
+  <variable id="XS_APPLICATIONUSER" type="session"/>
+</localVariables>
+<variableMappings/>
+<dataSources>
+  <DataSource id="COM_ORGANON_TOCS_EVENTS">
+    <resourceUri>COM_ORGANON_TOCS_EVENTS</resourceUri>
+  </DataSource>
+  <DataSource id="COM_ORGANON_TOCS_USER_PLANT_ROLE_MAPPING">
+    <resourceUri>COM_ORGANON_TOCS_USER_PLANT_ROLE_MAPPING</resourceUri>
+  </DataSource>
+</dataSources>
+<snapshotProcedures/>
+<calculationViews>
+  <calculationView xsi:type="Calculation:ProjectionView" id="Projection_1" filterExpressionLanguage="SQL">
+    <viewAttributes>
+      <viewAttribute id="EVENT_TYPE"/>
+      <viewAttribute id="WAREHOUSE_ID"/>
+      <viewAttribute id="PLANT_ID"/>
+      <viewAttribute id="MATERIAL_ID"/>
+      <viewAttribute id="BATCH_ID"/>
+      <viewAttribute id="SOURCE_HU_ID"/>
+      <viewAttribute id="DEST_HU_ID"/>
+      <viewAttribute id="PROCESS_ORDER_ID"/>
+      <viewAttribute id="WAREHOUSE_TASK"/>
+      <viewAttribute id="EVENT_DATE"/>
+      <viewAttribute id="EVENT_TIME"/>
+      <viewAttribute id="ACCUMULATED_TOCS_TIME"/>
+      <viewAttribute id="CHANGED_BY"/>
+    
+      <viewAttribute id="EVENT_TOCS_TIME"/>
+    
+      <viewAttribute id="DEST_STORAGE_TYPE"/>
+      <viewAttribute id="DEST_STORAGE_BIN"/>
+      <viewAttribute id="SOURCE_STORAGE_TYPE"/>
+      <viewAttribute id="SOURCE_STORAGE_BIN"/>
+      <viewAttribute id="UOM"/>
+    
+      <viewAttribute id="QUANTITY"/>
+    
+      <viewAttribute id="SIGN"/>
+    </viewAttributes>
+    <calculatedViewAttributes>
+      <calculatedViewAttribute id="CM_ACC_TOCS_MIN" datatype="DOUBLE" expressionLanguage="SQL">
+        <formula>&quot;ACCUMULATED_TOCS_TIME&quot;/(1000 * 60)</formula>
+      </calculatedViewAttribute>
+    
+      <calculatedViewAttribute id="CM_EVENT_TOCS_MIN" datatype="DOUBLE" expressionLanguage="SQL">
+    
+        <formula>&quot;EVENT_TOCS_TIME&quot;/(1000 * 60)</formula>
+    
+      </calculatedViewAttribute>
+    </calculatedViewAttributes>
+    <input node="COM_ORGANON_TOCS_EVENTS">
+      <mapping xsi:type="Calculation:AttributeMapping" target="CHANGED_BY" source="MODIFIEDBY"/>
+    </input>
+    <filter>&quot;EVENT_DATE&quot; &gt;= '$$IP_EVENT_DATE_FROM$$'
+AND &quot;EVENT_DATE&quot; &lt;= '$$IP_EVENT_DATE_TO$$'</filter>
+  </calculationView>
+  <calculationView xsi:type="Calculation:ProjectionView" id="Projection_2" filterExpressionLanguage="SQL">
+    <viewAttributes>
+      <viewAttribute id="USER_NAME"/>
+      <viewAttribute id="PLANT_ID"/>
+    </viewAttributes>
+    <calculatedViewAttributes/>
+    <input node="COM_ORGANON_TOCS_USER_PLANT_ROLE_MAPPING">
+      <mapping xsi:type="Calculation:AttributeMapping" target="USER_NAME" source="BTP_USER_NAME"/>
+    </input>
+    <filter>'??XS_APPLICATIONUSER??'=UPPER(&quot;USER_NAME&quot;)</filter>
+  </calculationView>
+  <calculationView xsi:type="Calculation:JoinView" id="Join_1" cardinality="CN_1" joinType="inner" filterExpressionLanguage="SQL">
+    <viewAttributes>
+      <viewAttribute id="EVENT_TYPE"/>
+      <viewAttribute id="WAREHOUSE_ID"/>
+      <viewAttribute id="PLANT_ID"/>
+      <viewAttribute id="MATERIAL_ID"/>
+      <viewAttribute id="BATCH_ID"/>
+      <viewAttribute id="SOURCE_HU_ID"/>
+      <viewAttribute id="DEST_HU_ID"/>
+      <viewAttribute id="PROCESS_ORDER_ID"/>
+      <viewAttribute id="WAREHOUSE_TASK"/>
+      <viewAttribute id="EVENT_DATE"/>
+      <viewAttribute id="EVENT_TIME"/>
+      <viewAttribute id="ACCUMULATED_TOCS_TIME" aggregationType="sum"/>
+      <viewAttribute id="CHANGED_BY"/>
+      <viewAttribute id="EVENT_TOCS_TIME" aggregationType="sum"/>
+      <viewAttribute id="DEST_STORAGE_TYPE"/>
+      <viewAttribute id="DEST_STORAGE_BIN"/>
+      <viewAttribute id="SOURCE_STORAGE_TYPE"/>
+      <viewAttribute id="SOURCE_STORAGE_BIN"/>
+      <viewAttribute id="UOM"/>
+      <viewAttribute id="QUANTITY" aggregationType="sum"/>
+      <viewAttribute id="SIGN"/>
+      <viewAttribute id="CM_ACC_TOCS_MIN" aggregationType="sum"/>
+      <viewAttribute id="CM_EVENT_TOCS_MIN" aggregationType="sum"/>
+    </viewAttributes>
+    <calculatedViewAttributes/>
+    <input node="Projection_1">
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TYPE" source="EVENT_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WAREHOUSE_ID" source="WAREHOUSE_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PLANT_ID" source="PLANT_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="MATERIAL_ID" source="MATERIAL_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="BATCH_ID" source="BATCH_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="SOURCE_HU_ID" source="SOURCE_HU_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_HU_ID" source="DEST_HU_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="PROCESS_ORDER_ID" source="PROCESS_ORDER_ID"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="WAREHOUSE_TASK" source="WAREHOUSE_TASK"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_DATE" source="EVENT_DATE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TIME" source="EVENT_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="ACCUMULATED_TOCS_TIME" source="ACCUMULATED_TOCS_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CHANGED_BY" source="CHANGED_BY"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="EVENT_TOCS_TIME" source="EVENT_TOCS_TIME"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_TYPE" source="DEST_STORAGE_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DEST_STORAGE_BIN" source="DEST_STORAGE_BIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="SOURCE_STORAGE_TYPE" source="SOURCE_STORAGE_TYPE"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="SOURCE_STORAGE_BIN" source="SOURCE_STORAGE_BIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="UOM" source="UOM"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="QUANTITY" source="QUANTITY"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="SIGN" source="SIGN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CM_ACC_TOCS_MIN" source="CM_ACC_TOCS_MIN"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="CM_EVENT_TOCS_MIN" source="CM_EVENT_TOCS_MIN"/>
+    </input>
+    <input node="Projection_2">
+      <mapping xsi:type="Calculation:AttributeMapping" target="PLANT_ID" source="PLANT_ID"/>
+    </input>
+    <filter>&quot;EVENT_DATE&quot; &gt;= '$$IP_EVENT_DATE_FROM$$'
+AND &quot;EVENT_DATE&quot; &lt;= '$$IP_EVENT_DATE_TO$$'</filter>
+    <joinAttribute name="PLANT_ID"/>
+  </calculationView>
+</calculationViews>
+
+<logicalModel id="Join_1" filterExpressionLanguage="SQL">
+  <attributes>
+    <attribute id="EVENT_TYPE" order="1" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="EVENT_TYPE"/>
+      <keyMapping columnObjectName="Join_1" columnName="EVENT_TYPE"/>
+    </attribute>
+    <attribute id="WAREHOUSE_ID" order="2" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="WAREHOUSE_ID"/>
+      <keyMapping columnObjectName="Join_1" columnName="WAREHOUSE_ID"/>
+    </attribute>
+    <attribute id="PLANT_ID" order="3" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="PLANT_ID"/>
+      <keyMapping columnObjectName="Join_1" columnName="PLANT_ID"/>
+    </attribute>
+    <attribute id="MATERIAL_ID" order="4" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="MATERIAL_ID"/>
+      <keyMapping columnObjectName="Join_1" columnName="MATERIAL_ID"/>
+    </attribute>
+    <attribute id="BATCH_ID" order="5" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="BATCH_ID"/>
+      <keyMapping columnObjectName="Join_1" columnName="BATCH_ID"/>
+    </attribute>
+    <attribute id="SOURCE_HU_ID" order="6" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="SOURCE_HU_ID"/>
+      <keyMapping columnObjectName="Join_1" columnName="SOURCE_HU_ID"/>
+    </attribute>
+    <attribute id="DEST_HU_ID" order="7" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="DEST_HU_ID"/>
+      <keyMapping columnObjectName="Join_1" columnName="DEST_HU_ID"/>
+    </attribute>
+    <attribute id="PROCESS_ORDER_ID" order="8" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="PROCESS_ORDER_ID"/>
+      <keyMapping columnObjectName="Join_1" columnName="PROCESS_ORDER_ID"/>
+    </attribute>
+    <attribute id="WAREHOUSE_TASK" order="9" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="WAREHOUSE_TASK"/>
+      <keyMapping columnObjectName="Join_1" columnName="WAREHOUSE_TASK"/>
+    </attribute>
+    <attribute id="EVENT_DATE" order="10" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="EVENT_DATE"/>
+      <keyMapping columnObjectName="Join_1" columnName="EVENT_DATE"/>
+    </attribute>
+    <attribute id="EVENT_TIME" order="11" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="EVENT_TIME"/>
+      <keyMapping columnObjectName="Join_1" columnName="EVENT_TIME"/>
+    </attribute>
+    <attribute id="CHANGED_BY" order="12" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="CHANGED_BY"/>
+      <keyMapping columnObjectName="Join_1" columnName="CHANGED_BY"/>
+    </attribute>
+  
+    <attribute id="DEST_STORAGE_TYPE" order="15" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="DEST_STORAGE_TYPE"/>
+  
+      <keyMapping columnObjectName="Join_1" columnName="DEST_STORAGE_TYPE"/>
+  
+    </attribute>
+    <attribute id="DEST_STORAGE_BIN" order="16" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="DEST_STORAGE_BIN"/>
+      <keyMapping columnObjectName="Join_1" columnName="DEST_STORAGE_BIN"/>
+    </attribute>
+    <attribute id="SOURCE_STORAGE_TYPE" order="17" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="SOURCE_STORAGE_TYPE"/>
+      <keyMapping columnObjectName="Join_1" columnName="SOURCE_STORAGE_TYPE"/>
+    </attribute>
+    <attribute id="SOURCE_STORAGE_BIN" order="18" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="SOURCE_STORAGE_BIN"/>
+      <keyMapping columnObjectName="Join_1" columnName="SOURCE_STORAGE_BIN"/>
+    </attribute>
+    <attribute id="UOM" order="19" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="UOM"/>
+      <keyMapping columnObjectName="Join_1" columnName="UOM"/>
+    </attribute>
+  
+    <attribute id="SIGN" order="21" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="SIGN"/>
+  
+      <keyMapping columnObjectName="Join_1" columnName="SIGN"/>
+  
+    </attribute>
+  </attributes>
+  <calculatedAttributes/>
+  <baseMeasures>
+    <measure id="CM_ACC_TOCS_MIN" order="13" aggregationType="sum" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="CM_ACC_TOCS_MIN"/>
+      <measureMapping columnObjectName="Join_1" columnName="CM_ACC_TOCS_MIN"/>
+    </measure>
+  
+    <measure id="CM_EVENT_TOCS_MIN" order="14" aggregationType="sum" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="CM_EVENT_TOCS_MIN"/>
+      <measureMapping columnObjectName="Join_1" columnName="CM_EVENT_TOCS_MIN"/>
+    </measure>
+    <measure id="QUANTITY" order="20" aggregationType="sum" measureType="simple" restrictionExpressionLanguage="SQL">
+      <descriptions defaultDescription="QUANTITY"/>
+      <measureMapping columnObjectName="Join_1" columnName="QUANTITY"/>
+    </measure>
+  </baseMeasures>
+  <calculatedMeasures/>
+  <restrictedMeasures/>
+  <localDimensions/>
+
+  <filter>&quot;EVENT_DATE&quot; &gt;= '$$IP_EVENT_DATE_FROM$$'
+AND &quot;EVENT_DATE&quot; &lt;= '$$IP_EVENT_DATE_TO$$'</filter>
+
+</logicalModel>
+<layout>
+  <shapes>
+    <shape expanded="true" modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+      <upperLeftCorner x="221" y="112"/>
+    
+      <rectangleSize width="160"/>
+    </shape>
+    
+  
+    <shape expanded="true" modelObjectName="Projection_1" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="376"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+  
+    <shape expanded="true" modelObjectName="Projection_2" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="302" y="376"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+    <shape expanded="true" modelObjectName="Join_1" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="221" y="237"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+    <shape modelObjectName="Projection_1" modelObjectNameSpace="Join_1" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="20" y="30"/>
+      <rectangleSize width="250"/>
+    </shape>
+    <shape modelObjectName="Projection_2" modelObjectNameSpace="Join_1" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="320" y="30"/>
+      <rectangleSize width="154"/>
+    </shape>
+  </shapes>
+</layout>
+</Calculation:scenario>
